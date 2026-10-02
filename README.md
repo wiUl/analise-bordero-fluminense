@@ -99,7 +99,7 @@ Os PDFs originais serão tratados como fontes documentais/raw, enquanto os dados
 
 A documentação detalhada está em [docs/04_modelagem.md](docs/04_modelagem.md) e o dicionário completo em [docs/03_dicionario_dados.md](docs/03_dicionario_dados.md).
 
-![Diagrama da modelagem de dados](images/modelo_dados.svg)
+![Diagrama da modelagem de dados](images/DER%20-%20Fluminense_border%C3%B4.png)
 
 A modelagem busca separar entidades e eventos que possuem significados diferentes, evitando tanto a duplicação desnecessária de informações quanto uma normalização excessiva.
 
@@ -469,13 +469,13 @@ analise-borderos-fluminense/
 
 ## 📚 Documentação
 
-A documentação detalhada do projeto está organizada em `docs/`:
+A documentação detalhada do projeto será organizada em `docs/`:
 
 - [Dicionário de dados](docs/03_dicionario_dados.md)
 - [Modelagem de dados](docs/04_modelagem.md)
 - [Metodologia dos atributos da partida](docs/07_metodologia_atributos_partida.md)
 
-O diagrama da modelagem está em `images/modelo_dados.svg`.
+O diagrama da modelagem está em `images/DER - Fluminense_borderô.png`.
 
 ## 🗺️ Roadmap
 
