@@ -97,6 +97,10 @@ Os PDFs originais serão tratados como fontes documentais/raw, enquanto os dados
 
 ## 🧩 Modelagem dos dados
 
+A documentação detalhada está em [docs/04_modelagem.md](docs/04_modelagem.md) e o dicionário completo em [docs/03_dicionario_dados.md](docs/03_dicionario_dados.md).
+
+![Diagrama da modelagem de dados](images/modelo_dados.svg)
+
 A modelagem busca separar entidades e eventos que possuem significados diferentes, evitando tanto a duplicação desnecessária de informações quanto uma normalização excessiva.
 
 A estrutura conceitual atual contempla:
@@ -334,21 +338,11 @@ de:
 
 ## 👥 Sócio-torcedor
 
-Informações relacionadas ao programa de sócio-torcedor poderão ser integradas ao projeto por meio de snapshots temporais.
+O Portal da Transparência disponibiliza uma série histórica mensal de sócios adimplentes e inadimplentes. Neste momento, essa série será tratada como **fonte externa para o Power BI**, sem uma tabela obrigatória no PostgreSQL.
 
-A estrutura prevista inclui:
+A decisão poderá ser revista posteriormente caso a integração ao banco traga benefício analítico.
 
-```text
-SNAPSHOT_SOCIOS
-
-- id_snapshot
-- data_referencia
-- quantidade_socios
-```
-
-Essa abordagem permite relacionar a quantidade de sócios ao período correspondente à partida sem tratar o número de associados como uma característica permanente do jogo.
-
-Além disso, os próprios borderôs permitirão analisar a participação de diferentes categorias de sócios na venda/utilização dos ingressos.
+Além disso, os próprios borderôs permitirão analisar a participação de diferentes categorias de sócios nos ingressos.
 
 ---
 
@@ -473,6 +467,16 @@ analise-borderos-fluminense/
 
 ---
 
+## 📚 Documentação
+
+A documentação detalhada do projeto está organizada em `docs/`:
+
+- [Dicionário de dados](docs/03_dicionario_dados.md)
+- [Modelagem de dados](docs/04_modelagem.md)
+- [Metodologia dos atributos da partida](docs/07_metodologia_atributos_partida.md)
+
+O diagrama da modelagem está em `images/modelo_dados.svg`.
+
 ## 🗺️ Roadmap
 
 * [x] Definição inicial do problema
@@ -480,12 +484,15 @@ analise-borderos-fluminense/
 * [x] Análise inicial da estrutura dos borderôs
 * [x] Revisão inicial das entidades do modelo
 * [x] Definição inicial das estruturas de contexto e atributos da partida
+* [x] Definição do desempenho pré-jogo
+* [x] Definição do armazenamento do resumo financeiro oficial
+* [x] Definição inicial do tratamento da série histórica de sócios
 * [ ] Definição final do modelo conceitual
 * [ ] Definição do modelo lógico
 * [ ] Definição da metodologia de `importancia_partida`
 * [ ] Definição da metodologia de `apelo_adversario`
 * [ ] Definição do G12 utilizado na análise
-* [ ] Criação do dicionário de dados
+* [x] Criação do dicionário de dados
 * [ ] Configuração do PostgreSQL
 * [ ] Desenvolvimento da estrutura do banco
 * [ ] Desenvolvimento da extração dos borderôs
