@@ -4,7 +4,19 @@ Projeto de análise de dados voltado ao estudo da relação entre **preços de i
 
 O projeto busca construir uma base de dados estruturada a partir dos borderôs e integrá-la posteriormente a outras fontes de informação, permitindo análises exploratórias e estatísticas sobre a **demanda por ingressos, ocupação e desempenho financeiro das partidas**.
 
-> **Status:** Em desenvolvimento
+> **Status:** Em desenvolvimento — fase de planejamento e modelagem
+
+### Resumo do projeto
+
+| | |
+| --- | --- |
+| **Pergunta** | Como preço, contexto da partida e perfil do jogo se relacionam com público, ocupação e receita de bilheteria do Fluminense? |
+| **Fonte** | Borderôs de jogos do Fluminense como mandante, divulgados publicamente pelo clube (PDFs). Período e quantidade de jogos: **a definir**. |
+| **Já existe** | Dicionário de dados, modelagem relacional (DER), metodologia dos atributos da partida e roadmap, em [`docs/`](docs/) e [`images/`](images/). |
+| **Ainda não existe** | Coleta dos borderôs, extração, banco PostgreSQL, análises e dashboard (as pastas `data/`, `scripts/`, `database/` e `powerbi/` estão reservadas). |
+| **Tecnologias planejadas** | PostgreSQL, SQL, Python, Power BI. |
+
+Nenhum resultado analítico foi produzido até o momento.
 
 ---
 
@@ -435,23 +447,22 @@ As ferramentas poderão ser ajustadas conforme o desenvolvimento do projeto.
 ## 📁 Estrutura planejada do repositório
 
 ```text
-analise-borderos-fluminense/
+analise-bordero-fluminense/
 │
 ├── README.md
 │
 ├── docs/
-│   ├── 01_objetivo.md
-│   ├── 02_fontes_dados.md
-│   ├── 03_modelagem.md
-│   ├── 04_dicionario_dados.md
-│   ├── 05_metodologia_coleta.md
-│   ├── 06_tratamento_dados.md
-│   ├── 07_metodologia_atributos_partida.md
-│   └── 08_metodologia_analise.md
+│   ├── 03_dicionario_dados.md        (existe)
+│   ├── 04_modelagem.md               (existe)
+│   ├── 07_metodologia_atributos_partida.md   (existe)
+│   └── ...                           (demais documentos serão criados conforme as etapas avançarem)
+│
+├── images/
+│   └── DER - Fluminense_borderô.png  (existe)
 │
 ├── database/
-│   ├── schema.sql
-│   └── seeds.sql
+│   ├── schema.sql                    (planejado)
+│   └── seeds.sql                     (planejado)
 │
 ├── scripts/
 │   ├── extraction/
@@ -469,13 +480,13 @@ analise-borderos-fluminense/
 
 ## 📚 Documentação
 
-A documentação detalhada do projeto será organizada em `docs/`:
+A documentação detalhada do projeto fica em `docs/` e será ampliada ao longo do desenvolvimento:
 
 - [Dicionário de dados](docs/03_dicionario_dados.md)
 - [Modelagem de dados](docs/04_modelagem.md)
 - [Metodologia dos atributos da partida](docs/07_metodologia_atributos_partida.md)
 
-O diagrama da modelagem está em `images/DER - Fluminense_borderô.png`.
+O diagrama da modelagem (DER) está em [`images/DER - Fluminense_borderô.png`](images/DER%20-%20Fluminense_border%C3%B4.png).
 
 ## 🗺️ Roadmap
 
@@ -509,7 +520,7 @@ O diagrama da modelagem está em `images/DER - Fluminense_borderô.png`.
 
 ---
 
-## 📚 Documentação e rastreabilidade
+## 🔎 Rastreabilidade
 
 A documentação do projeto será construída progressivamente neste repositório.
 
