@@ -20,64 +20,92 @@ Representa o evento esportivo e é a entidade central do modelo.
 | `data` | DATE | Sim | Borderô/fonte oficial | Data da partida. |
 | `horario` | TIME | Não | Fonte complementar | Horário da partida. |
 | `adversario_id` | INT | Sim | Fonte oficial | FK para ADVERSARIO. |
-| `competicao_id` | INT | Sim | Fonte oficial | FK para COMPETICAO. |
+| `competicao_temporada_id` | INT | Sim | Fonte oficial/complementar | FK para COMPETICAO_TEMPORADA, identificando a edição da competição. |
 | `estadio_id` | INT | Sim | Fonte oficial | FK para ESTADIO. |
 | `rodada` | VARCHAR | Não | Fonte oficial/complementar | Rodada, fase ou identificação equivalente. |
 
 ## 2. ADVERSARIO
 
+Representa o clube adversário, identificado por nome padronizado e com indicadores objetivos definidos pelo projeto.
+
 | Campo | Tipo | Obrigatório | Origem | Descrição / regra |
 |---|---|---:|---|---|
 | `id_adversario` | INT | Sim | Interno | Identificador único. PK. |
-| `nome` | VARCHAR | Sim | Fonte oficial | Nome padronizado do adversário. |
+| `nome` | VARCHAR | Sim | Fonte oficial | Nome padronizado do adversário. Único. |
+| `e_classico` | BOOLEAN | Sim | Metodológico | Indica se o adversário é classificado como clássico para o projeto. Definir e documentar o critério. |
+| `e_clube_g12` | BOOLEAN | Sim | Metodológico | Indica se o adversário pertence ao G12 adotado pelo projeto. Definir e documentar a composição do grupo. |
+
+Os dois indicadores são atributos de `ADVERSARIO` no modelo atual. `apelo_adversario` continua em `ATRIBUTOS_PARTIDA`, pois é avaliado para cada partida/contexto histórico.
 
 ## 3. COMPETICAO
+
+Identifica a competição independentemente da temporada em que ocorre.
 
 | Campo | Tipo | Obrigatório | Origem | Descrição / regra |
 |---|---|---:|---|---|
 | `id_competicao` | INT | Sim | Interno | Identificador único. PK. |
-| `nome` | VARCHAR | Sim | Fonte oficial | Nome da competição. |
-| `temporada` | INT | Não | Fonte oficial/complementar | Temporada/ano de referência. |
+| `nome` | VARCHAR | Sim | Fonte oficial | Nome padronizado da competição. Único. |
 
-## 4. ESTADIO
+## 4. TEMPORADA
+
+Identifica o ano/temporada de referência.
+
+| Campo | Tipo | Obrigatório | Origem | Descrição / regra |
+|---|---|---:|---|---|
+| `id_temporada` | INT | Sim | Interno | Identificador único. PK. |
+| `ano` | INT | Sim | Fonte oficial/complementar | Ano da temporada. Único. |
+
+## 5. COMPETICAO_TEMPORADA
+
+Relaciona uma competição à temporada em que foi disputada. `PARTIDA` referencia esta associação por `competicao_temporada_id`.
+
+| Campo | Tipo | Obrigatório | Origem | Descrição / regra |
+|---|---|---:|---|---|
+| `id_competicao_temporada` | INT | Sim | Interno | Identificador único. PK. |
+| `id_competicao` | INT | Sim | Interno | FK para COMPETICAO. |
+| `id_temporada` | INT | Sim | Interno | FK para TEMPORADA. |
+
+A combinação `(id_competicao, id_temporada)` deve ser única para impedir duplicação da mesma competição na mesma temporada.
+
+## 6. ESTADIO
 
 | Campo | Tipo | Obrigatório | Origem | Descrição / regra |
 |---|---|---:|---|---|
 | `id_estadio` | INT | Sim | Interno | Identificador único. PK. |
-| `nome` | VARCHAR | Sim | Fonte oficial | Nome do estádio. |
+| `nome` | VARCHAR | Sim | Fonte oficial | Nome do estádio. Único. |
 | `cidade` | VARCHAR | Não | Fonte complementar | Cidade. |
 | `estado` | VARCHAR | Não | Fonte complementar | Estado/UF. |
 | `pais` | VARCHAR | Não | Fonte complementar | País. |
-| `capacidade` | INT | Não | Fonte complementar | Capacidade adotada para análises de ocupação. |
+| `capacidade` | INT | Não | Fonte complementar | Capacidade de referência. A capacidade efetiva pode variar conforme a configuração da partida; validar o denominador usado no cálculo de ocupação. |
 
-## 5. SETOR
+## 7. SETOR
 
 | Campo | Tipo | Obrigatório | Origem | Descrição / regra |
 |---|---|---:|---|---|
 | `id_setor` | INT | Sim | Interno | Identificador único. PK. |
-| `nome` | VARCHAR | Sim | Borderô | Nome padronizado do setor. |
+| `nome` | VARCHAR | Sim | Borderô | Nome padronizado do setor. Único. |
 
-## 6. CATEGORIA_INGRESSO
+## 8. CATEGORIA_INGRESSO
 
 Representa a categoria comercial do ingresso.
 
 | Campo | Tipo | Obrigatório | Origem | Descrição / regra |
 |---|---|---:|---|---|
 | `id_categoria` | INT | Sim | Interno | Identificador único. PK. |
-| `nome` | VARCHAR | Sim | Borderô | Categoria, como inteira, meia ou sócio. |
+| `nome` | VARCHAR | Sim | Borderô | Categoria, como inteira, meia ou sócio. Único. |
 
-## 7. PLANO_SOCIO
+## 9. PLANO_SOCIO
 
 Detalha o plano de sócio quando aplicável.
 
 | Campo | Tipo | Obrigatório | Origem | Descrição / regra |
 |---|---|---:|---|---|
 | `id_plano` | INT | Sim | Interno | Identificador único. PK. |
-| `nome` | VARCHAR | Sim | Borderô | Nome do plano/modalidade de sócio. |
+| `nome` | VARCHAR | Sim | Borderô | Nome do plano/modalidade de sócio. Único. |
 
 Em INGRESSO_PARTIDA, `id_plano` pode ser NULL quando não se aplica.
 
-## 8. INGRESSO_PARTIDA
+## 10. INGRESSO_PARTIDA
 
 Representa uma linha de ingresso específica da partida, setor, categoria e, quando aplicável, plano.
 
@@ -94,9 +122,11 @@ Representa uma linha de ingresso específica da partida, setor, categoria e, qua
 | `quantidade_utilizada` | INT | Não | Borderô | Quantidade utilizada apresentada. |
 | `arrecadacao` | DECIMAL(12,2) | Não | Borderô | Arrecadação da linha. |
 
+A combinação de negócio `(id_partida, id_setor, id_categoria, id_plano)` não deve gerar registros duplicados. Como `id_plano` pode ser `NULL`, a implementação do banco deve tratar explicitamente a unicidade para esse caso.
+
 As definições de disponível, devolvido e utilizado serão preservadas conforme a nomenclatura da fonte, sem interpretações adicionais não validadas.
 
-## 9. DESPESA_PARTIDA
+## 11. DESPESA_PARTIDA
 
 Representa cada linha de despesa apresentada no borderô.
 
@@ -109,7 +139,7 @@ Representa cada linha de despesa apresentada no borderô.
 
 Não haverá inicialmente uma tabela TIPO_DESPESA.
 
-## 10. RESUMO_FINANCEIRO_PARTIDA
+## 12. RESUMO_FINANCEIRO_PARTIDA
 
 Tabela 1:1 com PARTIDA para armazenar os valores consolidados oficialmente apresentados no borderô.
 
@@ -128,7 +158,7 @@ Tabela 1:1 com PARTIDA para armazenar os valores consolidados oficialmente apres
 
 O objetivo é comparar os valores oficiais com cálculos independentes feitos a partir do detalhamento. Diferenças devem ser investigadas, não simplesmente ajustadas.
 
-## 11. CONTEXTO_PARTIDA
+## 13. CONTEXTO_PARTIDA
 
 | Campo | Tipo | Obrigatório | Origem | Descrição / regra |
 |---|---|---:|---|---|
@@ -138,19 +168,16 @@ O objetivo é comparar os valores oficiais com cálculos independentes feitos a 
 
 Dia da semana e mês serão derivados da data.
 
-## 12. ATRIBUTOS_PARTIDA
+## 14. ATRIBUTOS_PARTIDA
 
 | Campo | Tipo | Obrigatório | Origem | Descrição / regra |
 |---|---|---:|---|---|
 | `id_partida` | INT | Sim | Interno | PK e FK para PARTIDA. |
 | `importancia_partida` | DECIMAL(4,1) | Não | Metodológico | Índice de 0 a 10. |
 | `apelo_adversario` | DECIMAL(4,1) | Não | Metodológico | Índice de 0 a 10. |
-| `e_classico` | BOOLEAN | Não | Metodológico | Indica se o confronto é clássico. |
-| `e_clube_g12` | BOOLEAN | Não | Metodológico | Indica se o adversário pertence ao G12 definido pelo projeto. |
+Esses índices não são dados oficiais do borderô. Os indicadores `e_classico` e `e_clube_g12` pertencem à entidade `ADVERSARIO` no modelo atual e não devem ser duplicados aqui.
 
-Esses campos não são dados oficiais do borderô.
-
-## 13. DESEMPENHO_PARTIDA
+## 15. DESEMPENHO_PARTIDA
 
 Representa a situação esportiva do Fluminense antes da partida.
 
@@ -173,7 +200,7 @@ Em mata-mata sem classificação por pontos, `pontos_fluminense` e `posicao_flum
 
 Fase, jogo de ida/volta e situação do confronto poderão ser representados em outros atributos quando necessários.
 
-## 14. Série histórica de sócios
+## 16. Série histórica de sócios
 
 O Portal da Transparência disponibiliza uma série mensal com informações de sócios adimplentes e inadimplentes.
 
