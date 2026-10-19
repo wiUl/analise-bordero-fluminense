@@ -115,30 +115,29 @@ A documentação detalhada está em [docs/04_modelagem.md](docs/04_modelagem.md)
 
 A modelagem busca separar entidades e eventos que possuem significados diferentes, evitando tanto a duplicação desnecessária de informações quanto uma normalização excessiva.
 
-A estrutura conceitual atual contempla:
+A estrutura lógica representada no DER contempla:
 
 ```text
 PARTIDA
-│
 ├── ADVERSARIO
-├── COMPETICAO
+├── COMPETICAO_TEMPORADA
+│   ├── COMPETICAO
+│   └── TEMPORADA
 ├── ESTADIO
-│
 ├── INGRESSO_PARTIDA
 │   ├── SETOR
 │   ├── CATEGORIA_INGRESSO
 │   └── PLANO_SOCIO
-│
 ├── DESPESA_PARTIDA
-│
+├── RESUMO_FINANCEIRO_PARTIDA
 ├── CONTEXTO_PARTIDA
-│
 ├── ATRIBUTOS_PARTIDA
-│
 └── DESEMPENHO_PARTIDA
-
-SNAPSHOT_SOCIOS
 ```
+
+A série histórica mensal de sócios adimplentes e inadimplentes será inicialmente usada como fonte externa para o Power BI; ela não corresponde a uma tabela desse modelo relacional.
+
+A edição da competição é representada por `COMPETICAO_TEMPORADA`, que associa uma competição a uma temporada. Assim, `PARTIDA` referencia essa associação, em vez de armazenar a competição e o ano como atributos independentes.
 
 ### Partida
 
@@ -149,9 +148,11 @@ Entre seus principais atributos estão:
 * data;
 * horário;
 * adversário;
-* competição;
+* edição da competição (`competicao_temporada_id`);
 * estádio;
 * rodada/fase.
+
+A competição e o ano/temporada são mantidos em entidades próprias: `COMPETICAO` registra a competição, `TEMPORADA` registra o ano e `COMPETICAO_TEMPORADA` representa a participação daquela competição naquela temporada.
 
 ### Ingressos
 
@@ -223,9 +224,9 @@ ATRIBUTOS_PARTIDA
 - id_partida
 - importancia_partida
 - apelo_adversario
-- e_classico
-- e_clube_g12
 ```
+
+Os indicadores `e_classico` e `e_clube_g12` ficam em `ADVERSARIO`, conforme o DER. Eles descrevem o adversário segundo os critérios definidos pelo projeto; não são índices de avaliação específicos de cada partida. Já `apelo_adversario` permanece em `ATRIBUTOS_PARTIDA`, pois pode variar conforme o período histórico e o contexto da partida.
 
 ### Importância da partida
 
@@ -295,29 +296,20 @@ Clubes de baixa relevância nacional/continental
 
 Essa classificação será documentada e aplicada de maneira consistente.
 
-### Clássico
+### Indicadores do adversário
 
-`e_classico` representa se o confronto é considerado um clássico para fins da metodologia.
+Os campos `e_classico` e `e_clube_g12` pertencem à entidade `ADVERSARIO`, conforme o DER. O critério exato para considerar um adversário clássico e a composição do G12 devem ser documentados e aplicados de forma consistente.
 
-Valor:
-
-```text
-0 = não
-1 = sim
-```
-
-### Clube do G12
-
-`e_clube_g12` identifica se o adversário pertence ao grupo de clubes definido como G12 para a metodologia do projeto.
-
-Valor:
+Valor de ambos os indicadores:
 
 ```text
 0 = não
 1 = sim
 ```
 
-O G12 funciona como uma variável objetiva complementar ao índice de `apelo_adversario`, não substituindo a avaliação contextual do adversário.
+O G12 funciona como uma classificação objetiva complementar e não substitui a avaliação contextual de `apelo_adversario`.
+
+---
 
 ---
 
@@ -498,8 +490,8 @@ O diagrama da modelagem (DER) está em [`images/DER - Fluminense_borderô.png`](
 * [x] Definição do desempenho pré-jogo
 * [x] Definição do armazenamento do resumo financeiro oficial
 * [x] Definição inicial do tratamento da série histórica de sócios
-* [ ] Definição final do modelo conceitual
-* [ ] Definição do modelo lógico
+* [x] Definição do modelo conceitual
+* [x] Definição e documentação do modelo lógico (DER)
 * [ ] Definição da metodologia de `importancia_partida`
 * [ ] Definição da metodologia de `apelo_adversario`
 * [ ] Definição do G12 utilizado na análise
@@ -554,8 +546,8 @@ O objetivo é que o projeto não seja apenas um dashboard final, mas um exemplo 
 
 Este projeto encontra-se em fase de desenvolvimento.
 
-A modelagem conceitual está sendo refinada e as metodologias de construção das variáveis analíticas ainda serão definidas antes da coleta e análise completa dos dados.
+A modelagem conceitual e lógica está documentada no DER, no documento de modelagem e no dicionário de dados. A próxima fase é implementar o esquema no PostgreSQL, validar a estrutura com um conjunto pequeno de borderôs e iniciar a coleta sistemática.
 
-As análises, conclusões e visualizações ainda não foram finalizadas.
+Os critérios operacionais e exemplos definitivos para pontuar `importancia_partida` e `apelo_adversario`, assim como a definição do período da amostra, ainda precisam ser fechados antes das análises completas. As análises, conclusões e visualizações ainda não foram finalizadas.
 
 Resultados apresentados futuramente serão baseados nos dados coletados e na metodologia documentada neste repositório.
