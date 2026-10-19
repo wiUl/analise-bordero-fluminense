@@ -11,7 +11,7 @@ O projeto busca construir uma base de dados estruturada a partir dos borderôs e
 | | |
 | --- | --- |
 | **Pergunta** | Como preço, contexto da partida e perfil do jogo se relacionam com público, ocupação e receita de bilheteria do Fluminense? |
-| **Fonte** | Borderôs de jogos do Fluminense como mandante, divulgados publicamente pelo clube (PDFs). Período e quantidade de jogos: **a definir**. |
+| **Fonte** | Borderôs de jogos do Fluminense como mandante, divulgados publicamente pelo clube (PDFs) no [Portal da Transparência do Fluminense](https://transparenciafluminense.com.br/public/lista/124/arenas/operacao-de-jogos/borderos). Período e quantidade de jogos: **a definir**. |
 | **Já existe** | Dicionário de dados, modelagem relacional (DER), metodologia dos atributos da partida e roadmap, em [`docs/`](docs/) e [`images/`](images/). |
 | **Ainda não existe** | Coleta dos borderôs, extração, banco PostgreSQL, análises e dashboard (as pastas `data/`, `scripts/`, `database/` e `powerbi/` estão reservadas). |
 | **Tecnologias planejadas** | PostgreSQL, SQL, Python, Power BI. |
@@ -55,7 +55,7 @@ O projeto também pretende investigar diferentes faixas de preço e seus possív
 
 ## 📊 Fonte dos dados
 
-A principal fonte de dados será constituída pelos **borderôs das partidas do Fluminense FC**, disponibilizados publicamente pelo clube.
+A principal fonte de dados será constituída pelos **borderôs das partidas do Fluminense FC**, disponibilizados publicamente pelo clube no [Portal da Transparência do Fluminense](https://transparenciafluminense.com.br/public/lista/124/arenas/operacao-de-jogos/borderos).
 
 Os borderôs contêm informações financeiras e de bilheteria das partidas, incluindo dados relacionados a:
 
