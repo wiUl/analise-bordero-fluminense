@@ -546,7 +546,7 @@ O objetivo é que o projeto não seja apenas um dashboard final, mas um exemplo 
 
 Este projeto encontra-se em fase de desenvolvimento.
 
-A modelagem conceitual e lógica está documentada no DER, no documento de modelagem e no dicionário de dados. A próxima fase é implementar o esquema no PostgreSQL, validar a estrutura com um conjunto pequeno de borderôs e iniciar a coleta sistemática.
+O modelo conceitual e lógico está documentado no DER, no documento de modelagem e no dicionário de dados. A próxima fase é implementar o esquema no PostgreSQL, validar a estrutura com um conjunto pequeno de borderôs e iniciar a coleta sistemática.
 
 Os critérios operacionais e exemplos definitivos para pontuar `importancia_partida` e `apelo_adversario`, assim como a definição do período da amostra, ainda precisam ser fechados antes das análises completas. As análises, conclusões e visualizações ainda não foram finalizadas.
 
