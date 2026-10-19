@@ -175,6 +175,7 @@ Dia da semana e mês serão derivados da data.
 | `id_partida` | INT | Sim | Interno | PK e FK para PARTIDA. |
 | `importancia_partida` | DECIMAL(4,1) | Não | Metodológico | Índice de 0 a 10. |
 | `apelo_adversario` | DECIMAL(4,1) | Não | Metodológico | Índice de 0 a 10. |
+
 Esses índices não são dados oficiais do borderô. Os indicadores `e_classico` e `e_clube_g12` pertencem à entidade `ADVERSARIO` no modelo atual e não devem ser duplicados aqui.
 
 ## 15. DESEMPENHO_PARTIDA
