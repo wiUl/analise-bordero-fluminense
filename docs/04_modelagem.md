@@ -79,7 +79,7 @@ Armazena o recorte pré-jogo do desempenho do Fluminense: posição e pontos, qu
 
 ## Série histórica de sócios
 
-A série mensal de sócios adimplentes e inadimplentes será inicialmente tratada como fonte externa para o Power BI. Ela não integra as tabelas do modelo relacional atual e não é representada por uma tabela `SNAPSHOT_SOCIOS`.
+A série mensal de sócios adimplentes e inadimplentes será inicialmente tratada como fonte externa para o Power BI. Ela não integra as tabelas do modelo relacional atual.
 
 ## Normalização e integridade
 
