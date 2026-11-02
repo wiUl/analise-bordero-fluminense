@@ -4,19 +4,19 @@ Projeto de análise de dados voltado ao estudo da relação entre **preços de i
 
 O projeto busca construir uma base de dados estruturada a partir dos borderôs e integrá-la posteriormente a outras fontes de informação, permitindo análises exploratórias e estatísticas sobre a **demanda por ingressos, ocupação e desempenho financeiro das partidas**.
 
-> **Status:** Em desenvolvimento — fase de planejamento e modelagem
+> **Status:** Em desenvolvimento — transcrição e validação dos borderôs da temporada 2026; preparação da implementação do banco local
 
 ### Resumo do projeto
 
 | | |
 | --- | --- |
 | **Pergunta** | Como preço, contexto da partida e perfil do jogo se relacionam com público, ocupação e receita de bilheteria do Fluminense? |
-| **Fonte** | Borderôs de jogos do Fluminense como mandante, divulgados publicamente pelo clube (PDFs) no [Portal da Transparência do Fluminense](https://transparenciafluminense.com.br/public/lista/124/arenas/operacao-de-jogos/borderos). Período e quantidade de jogos: **a definir**. |
-| **Já existe** | Dicionário de dados, modelagem relacional (DER), metodologia dos atributos da partida e roadmap, em [`docs/`](docs/) e [`images/`](images/). |
-| **Ainda não existe** | Coleta dos borderôs, extração, banco PostgreSQL, análises e dashboard (as pastas `data/`, `scripts/`, `database/` e `powerbi/` estão reservadas). |
-| **Tecnologias planejadas** | PostgreSQL, SQL, Python, Power BI. |
+| **Fonte** | Borderôs de jogos do Fluminense como mandante, divulgados publicamente pelo clube (PDFs) no [Portal da Transparência do Fluminense](https://transparenciafluminense.com.br/public/lista/124/arenas/operacao-de-jogos/borderos). Amostra inicial: temporada **2026**. |
+| **Já existe** | Modelagem relacional (DER), dicionário de dados, metodologia dos atributos, PDFs originais e planilhas Excel de transcrição da maior parte dos jogos de 2026. |
+| **Em andamento / pendente** | Conclusão do inventário e das validações, transcrição dos documentos ainda disponíveis, implementação do banco local MySQL, pipeline ETL, análises e dashboard. |
+| **Tecnologias** | MySQL local, SQL, Python, Excel e Power BI. |
 
-Nenhum resultado analítico foi produzido até o momento.
+A coleta e a transcrição da temporada 2026 estão em andamento; algumas partidas ainda não possuem borderô disponível. As análises e o dashboard ainda não foram produzidos.
 
 ---
 
@@ -81,7 +81,7 @@ Informações que não estejam disponíveis nos borderôs poderão ser obtidas e
 
 Os dados não serão armazenados diretamente no formato dos PDFs.
 
-A proposta é transformar as informações dos borderôs em uma estrutura relacional utilizando **PostgreSQL**, permitindo posteriormente sua utilização em ferramentas de Business Intelligence.
+A proposta é transformar as informações dos borderôs em uma estrutura relacional utilizando **MySQL em ambiente local**. O banco será acessado pelos scripts Python e pelo Power BI, sem necessidade de hospedagem na nuvem para o escopo atual. O modelo havia sido inicialmente criado no Supabase com PostgreSQL; a decisão atual é adaptar e implementar a estrutura no MySQL instalado localmente.
 
 Fluxo planejado:
 
@@ -92,18 +92,20 @@ Extração e padronização
    ↓
 Modelagem dos dados
    ↓
-PostgreSQL
+Planilhas Excel (interim)
    ↓
-Integração com outras fontes
+ETL e validações com Python
    ↓
-Tratamento e transformação
+MySQL local
+   ↓
+Consultas SQL e integração com fontes complementares
    ↓
 Análises
    ↓
 Power BI
 ```
 
-Os PDFs originais serão tratados como fontes documentais/raw, enquanto os dados estruturados serão armazenados no banco de dados.
+Os PDFs originais são preservados em `data/raw/`. As transcrições revisadas em Excel ficam em `data/interim/` e funcionam como etapa intermediária para validação e carga. Os dados estruturados serão armazenados no MySQL local. O Supabase/PostgreSQL foi utilizado na etapa inicial de modelagem/prototipagem, mas não será a plataforma principal do projeto.
 
 ---
 
@@ -437,7 +439,7 @@ A análise poderá considerar diferentes níveis de:
 ## 🛠️ Tecnologias planejadas
 
 * **Python** — extração, tratamento e preparação dos dados
-* **PostgreSQL** — armazenamento e gerenciamento dos dados
+* **MySQL** — armazenamento e gerenciamento local dos dados
 * **SQL** — consultas e transformação dos dados
 * **Power BI** — análise e visualização
 * **Git/GitHub** — versionamento e documentação
@@ -464,15 +466,16 @@ analise-bordero-fluminense/
 │   └── DER - Fluminense_borderô.png  (existe)
 │
 ├── database/
-│   ├── schema.sql                    (planejado)
-│   └── seeds.sql                     (planejado)
+│   ├── schema.sql                    (DDL MySQL — a implementar)
+│   └── seeds.sql                     (a implementar)
 │
 ├── scripts/
 │   ├── extraction/
 │   └── transformation/
 │
 ├── data/
-│   ├── raw/
+│   ├── raw/          (PDFs originais dos borderôs)
+│   ├── interim/      (planilhas Excel de transcrição por partida)
 │   └── processed/
 │
 └── powerbi/
@@ -507,11 +510,13 @@ O diagrama da modelagem (DER) está em [`images/DER - Fluminense_borderô.png`](
 * [x] Definição da metodologia de `apelo_adversario` (escala 0–10 documentada)
 * [ ] Definição do G12 utilizado na análise
 * [x] Criação do dicionário de dados
-* [ ] Configuração do PostgreSQL
-* [ ] Desenvolvimento da estrutura do banco
-* [ ] Desenvolvimento da extração dos borderôs
-* [ ] Validação dos dados extraídos
-* [ ] Coleta dos borderôs
+* [x] Definição do MySQL local como banco principal do projeto
+* [ ] Configuração do ambiente MySQL local
+* [ ] Adaptação e implementação do DDL para MySQL (`database/schema.sql`)
+* [x] Organização inicial dos PDFs originais (`data/raw/`) e das transcrições Excel (`data/interim/`)
+* [ ] Conclusão do inventário das partidas e dos borderôs disponíveis da temporada 2026
+* [ ] Revisão cruzada das transcrições com os PDFs originais
+* [ ] Desenvolvimento do ETL para carregar as planilhas no banco
 * [ ] Integração com fontes complementares
 * [ ] Tratamento e transformação dos dados
 * [ ] Análise exploratória
@@ -557,7 +562,7 @@ O objetivo é que o projeto não seja apenas um dashboard final, mas um exemplo 
 
 Este projeto encontra-se em fase de desenvolvimento.
 
-O modelo conceitual e lógico está documentado no DER, no documento de modelagem e no dicionário de dados. A próxima fase é implementar o esquema no PostgreSQL, validar a estrutura com um conjunto pequeno de borderôs e iniciar a coleta sistemática.
+O modelo conceitual e lógico está documentado no DER, no documento de modelagem e no dicionário de dados. A maior parte dos borderôs disponíveis da temporada 2026 já foi transcrita em planilhas Excel individuais, armazenadas em `data/interim/`, enquanto os PDFs originais são preservados em `data/raw/`. Algumas partidas permanecem pendentes porque seus borderôs ainda não foram disponibilizados. A próxima fase é concluir o inventário e a revisão cruzada das transcrições, adaptar o modelo para MySQL e implementar o banco local antes de desenvolver a carga ETL.
 
 Os critérios e exemplos de pontuação para `importancia_partida` e `apelo_adversario` estão documentados em [Metodologia dos atributos da partida](docs/07_metodologia_atributos_partida.md). O período da amostra ainda precisa ser definido antes das análises completas. As análises, conclusões e visualizações ainda não foram finalizadas.
 
