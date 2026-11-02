@@ -2,7 +2,7 @@
 
 ## Objetivo e escopo
 
-Este documento descreve o modelo lógico relacional do projeto de análise de borderôs do Fluminense FC. O modelo será implementado no PostgreSQL e servirá de base para tratamento, análises e consumo pelo Power BI.
+Este documento descreve o modelo lógico relacional do projeto de análise de borderôs do Fluminense FC. O modelo será implementado em uma instância local do MySQL e servirá de base para tratamento, análises e consumo pelo Power BI. O projeto utilizou inicialmente o Supabase com PostgreSQL na etapa de prototipagem; a decisão atual é adotar MySQL local como banco principal, aproveitando a instalação já disponível no ambiente de desenvolvimento.
 
 O princípio adotado é representar cada conceito de negócio em sua própria entidade quando isso evita dependências indevidas e duplicação, sem criar tabelas artificiais apenas para aumentar o grau de normalização.
 
@@ -12,7 +12,7 @@ O DER vigente é a imagem exportada do dbdiagram.io:
 
 ![Diagrama entidade-relacionamento do projeto](../images/DER%20-%20Fluminense_border%C3%B4.png)
 
-O desenho deve ser considerado em conjunto com este documento e com o [dicionário de dados](03_dicionario_dados.md). O DDL ainda será implementado em `database/schema.sql`; portanto, restrições de unicidade, validações de domínio e demais regras devem ser confirmadas na implementação.
+O desenho deve ser considerado em conjunto com este documento e com o [dicionário de dados](03_dicionario_dados.md). O DDL MySQL ainda será implementado em `database/schema.sql`; portanto, restrições de unicidade, validações de domínio e demais regras devem ser confirmadas na implementação. A sintaxe e alguns comportamentos específicos do PostgreSQL utilizado na prototipagem deverão ser adaptados ao MySQL.
 
 ## Estrutura lógica
 
@@ -48,7 +48,7 @@ Cada registro corresponde a uma combinação de partida, setor, categoria e, qua
 
 A tabela registra preço, quantidade disponível, quantidade devolvida, quantidade utilizada e arrecadação. Os valores e a nomenclatura da fonte devem ser preservados antes de qualquer derivação.
 
-A combinação de negócio `(id_partida, id_setor, id_categoria, id_plano)` não deve gerar duplicidades. Como `id_plano` é opcional, a implementação SQL deve tratar explicitamente a unicidade quando esse campo for `NULL`.
+A combinação de negócio `(id_partida, id_setor, id_categoria, id_plano)` não deve gerar duplicidades. Como `id_plano` é opcional, a implementação deve tratar explicitamente a unicidade quando esse campo for `NULL`. No MySQL, um índice `UNIQUE` permite múltiplos valores `NULL`; portanto, a regra de negócio precisará de uma solução compatível com MySQL (por exemplo, coluna gerada ou outra estratégia validada no DDL), para impedir duplicidades nas linhas sem plano.
 
 ### DESPESA_PARTIDA
 
