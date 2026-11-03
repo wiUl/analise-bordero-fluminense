@@ -2,7 +2,9 @@
 
 ## Objetivo e escopo
 
-Este documento descreve o modelo lógico relacional do projeto de análise de borderôs do Fluminense FC. O modelo será implementado em uma instância local do MySQL e servirá de base para tratamento, análises e consumo pelo Power BI. O projeto utilizou inicialmente o Supabase com PostgreSQL na etapa de prototipagem; a decisão atual é adotar MySQL local como banco principal, aproveitando a instalação já disponível no ambiente de desenvolvimento.
+Este documento descreve o modelo lógico relacional do projeto de análise de borderôs do Fluminense FC. O banco principal do projeto é uma instância local do **MySQL 8**, utilizada para armazenar os dados estruturados que serão tratados, analisados em SQL e consumidos pelo Power BI.
+
+O projeto utilizou inicialmente o Supabase com PostgreSQL durante a prototipagem. A decisão atual é adotar MySQL local como banco principal, aproveitando a instalação disponível no ambiente de desenvolvimento. O DDL vigente está em [`database/schema_mysql_analise_bordero_fluminense.sql`](../database/schema_mysql_analise_bordero_fluminense.sql).
 
 O princípio adotado é representar cada conceito de negócio em sua própria entidade quando isso evita dependências indevidas e duplicação, sem criar tabelas artificiais apenas para aumentar o grau de normalização.
 
@@ -12,7 +14,7 @@ O DER vigente é a imagem exportada do dbdiagram.io:
 
 ![Diagrama entidade-relacionamento do projeto](../images/DER%20-%20Fluminense_border%C3%B4.png)
 
-O desenho deve ser considerado em conjunto com este documento e com o [dicionário de dados](03_dicionario_dados.md). O DDL MySQL ainda será implementado em `database/schema.sql`; portanto, restrições de unicidade, validações de domínio e demais regras devem ser confirmadas na implementação. A sintaxe e alguns comportamentos específicos do PostgreSQL utilizado na prototipagem deverão ser adaptados ao MySQL.
+O diagrama deve ser considerado em conjunto com este documento, com o [dicionário de dados](03_dicionario_dados.md) e com o DDL MySQL. O DDL é a implementação efetiva das chaves, restrições e regras de integridade; em caso de alteração do esquema, os três artefatos devem ser revisados em conjunto.
 
 ## Estrutura lógica
 
@@ -24,7 +26,7 @@ A coluna `competicao_temporada_id` referencia `COMPETICAO_TEMPORADA`, não diret
 
 ### ADVERSARIO
 
-Registra cada adversário uma única vez, por nome padronizado, incluindo os indicadores `e_classico` e `e_clube_g12`. Esses campos representam classificações do adversário segundo os critérios documentados pelo projeto. O índice `apelo_adversario` não está nesta tabela porque pode variar ao longo do tempo e é avaliado no contexto de cada partida.
+Registra cada adversário uma única vez, por nome padronizado, incluindo os indicadores `e_classico` e `e_clube_g12`. Esses campos representam classificações do adversário segundo os critérios documentados pelo projeto. O índice `apelo_adversario` não está nesta tabela porque pode variar conforme o contexto histórico de cada partida e é avaliado em `ATRIBUTOS_PARTIDA`.
 
 ### COMPETICAO, TEMPORADA e COMPETICAO_TEMPORADA
 
@@ -40,15 +42,19 @@ Armazena nome e informações de localização, além de uma capacidade de refer
 
 ### SETOR, CATEGORIA_INGRESSO e PLANO_SOCIO
 
-São entidades de referência para padronizar os nomes usados nos borderôs. O plano de sócio é opcional para uma linha de ingresso; `id_plano` pode ser `NULL` quando não se aplica.
+São entidades de referência para padronizar os nomes usados nos borderôs. O plano de sócio é opcional para uma linha de ingresso. Setor e categoria também podem ser `NULL` quando o borderô não especifica essas classificações para determinada linha.
 
 ### INGRESSO_PARTIDA
 
-Cada registro corresponde a uma combinação de partida, setor, categoria e, quando aplicável, plano de sócio. O preço pertence à oferta específica naquela partida, não permanentemente ao setor ou ao plano.
+Cada registro corresponde a uma linha de ingresso de uma partida. Quando informados pela fonte, setor, categoria e plano de sócio são relacionados às respectivas entidades de referência. O preço pertence à oferta específica naquela partida, não permanentemente ao setor ou ao plano.
 
-A tabela registra preço, quantidade disponível, quantidade devolvida, quantidade utilizada e arrecadação. Os valores e a nomenclatura da fonte devem ser preservados antes de qualquer derivação.
+A tabela mantém `descricao_original`, campo obrigatório que preserva a descrição literal apresentada no borderô. Esse campo é importante porque há linhas cuja descrição não permite identificar com segurança um setor ou uma categoria. Nesses casos, `id_setor` e/ou `id_categoria` permanecem `NULL`; não se deve inventar uma classificação para preencher a ausência.
 
-A combinação de negócio `(id_partida, id_setor, id_categoria, id_plano)` não deve gerar duplicidades. Como `id_plano` é opcional, a implementação deve tratar explicitamente a unicidade quando esse campo for `NULL`. No MySQL, um índice `UNIQUE` permite múltiplos valores `NULL`; portanto, a regra de negócio precisará de uma solução compatível com MySQL (por exemplo, coluna gerada ou outra estratégia validada no DDL), para impedir duplicidades nas linhas sem plano.
+A tabela também registra preço, quantidade disponível, quantidade devolvida, quantidade utilizada e arrecadação. Os valores e a nomenclatura da fonte devem ser preservados antes de qualquer derivação.
+
+Os campos de classificação, preço e arrecadação podem ser nulos quando a informação não é aplicável ou não está disponível no borderô. `NULL` não deve ser convertido automaticamente em zero: zero representa um valor explicitamente informado como zero.
+
+A regra de unicidade considera a partida, os identificadores de setor, categoria e plano e a descrição original. Como os identificadores de classificação podem ser nulos, o DDL MySQL utiliza colunas geradas que substituem esses nulos por um valor sentinela para compor a restrição `UNIQUE`. Essas colunas auxiliares são geradas pelo banco e não devem receber valores diretamente nas operações de carga.
 
 ### DESPESA_PARTIDA
 
@@ -85,12 +91,12 @@ A série mensal de sócios adimplentes e inadimplentes será inicialmente tratad
 
 O modelo foi organizado para atender à 3FN, sob as dependências funcionais assumidas: atributos descritivos dependem da chave da entidade a que pertencem; competição e temporada são separadas de sua associação; e dados de partidas, ofertas de ingresso, despesas e resumo oficial têm granularidades distintas.
 
-Não foi identificada, no escopo atual, necessidade de criar relações adicionais apenas para alegar 4FN ou 5FN. A avaliação final da integridade depende de materializar as regras em `schema.sql`, incluindo:
+Não foi identificada, no escopo atual, necessidade de criar relações adicionais apenas para alegar 4FN ou 5FN. A implementação MySQL contempla chaves primárias e estrangeiras, restrições de unicidade e validações de domínio. Entre as regras importantes estão:
 
-- chaves primárias e estrangeiras;
 - unicidade dos nomes nas entidades de referência;
 - unicidade de `(id_competicao, id_temporada)` em `COMPETICAO_TEMPORADA`;
-- unicidade da combinação de negócio de `INGRESSO_PARTIDA`, inclusive quando `id_plano` é `NULL`;
+- unicidade das linhas de `INGRESSO_PARTIDA`, inclusive quando os identificadores de setor, categoria ou plano são `NULL`, por meio de colunas geradas;
+- preservação de `descricao_original` para distinguir linhas do borderô cuja classificação não está especificada;
 - faixas válidas para os índices de 0 a 10 e para indicadores booleanos;
 - validações para quantidades não negativas, sem alterar os valores de origem silenciosamente.
 
@@ -101,7 +107,8 @@ A manutenção do resumo financeiro oficial é uma redundância documental inten
 - [Dicionário de dados](03_dicionario_dados.md)
 - [Metodologia dos atributos da partida](07_metodologia_atributos_partida.md)
 - [Imagem do DER](../images/DER%20-%20Fluminense_border%C3%B4.png)
+- [DDL MySQL](../database/schema_mysql_analise_bordero_fluminense.sql)
 
 ## Próxima etapa
 
-Com a especificação e a documentação alinhadas, a próxima fase é implementar o DDL em `database/schema.sql`, testar as restrições em uma instância PostgreSQL e validar o modelo com um pequeno conjunto de borderôs antes de ampliar a coleta.
+A próxima etapa do desenvolvimento é concluir a implementação do ETL para carregar as informações das planilhas de cada borderô no banco MySQL, mantendo a rastreabilidade da fonte e validando os dados carregados contra os totais oficiais.
