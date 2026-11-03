@@ -167,13 +167,23 @@ As informações de bilheteria são estruturadas em diferentes níveis:
 
 A tabela `INGRESSO_PARTIDA` concentra informações específicas daquela oferta de ingresso na partida, como:
 
+* descrição original da linha do borderô (`descricao_original`);
+* setor, quando informado;
+* categoria do ingresso, quando informada;
+* plano de sócio, quando aplicável;
 * preço;
 * quantidade disponível;
 * quantidade devolvida;
 * quantidade utilizada;
 * arrecadação.
 
-Essa estrutura permite analisar, por exemplo, como diferentes preços e categorias se comportam dentro de cada setor.
+**Tratamento de classificações ausentes:** alguns itens dos borderôs, como ingressos promocionais, camarotes promocionais, cadeiras cativas, tribuna e gratuidades por lei, podem não apresentar setor ou categoria. Por isso, `id_setor` e `id_categoria` aceitam `NULL` em `INGRESSO_PARTIDA`. A descrição original é obrigatória e preserva o texto do documento, sem criar setores ou categorias artificiais.
+
+O campo `id_plano` também aceita `NULL` quando não há plano de sócio associado. Preço e arrecadação permanecem nulos quando o borderô não informa esses valores; zero continua sendo tratado como valor informado, distinto de ausência.
+
+A restrição de unicidade considera a partida, as chaves técnicas das classificações (com `NULL` representado por zero apenas nessas colunas geradas) e a descrição original. Isso permite preservar linhas distintas mesmo quando setor ou categoria não estão especificados.
+
+Essa estrutura permite analisar, por exemplo, como diferentes preços e categorias se comportam dentro de cada setor, sem descartar itens cuja classificação não esteja explícita no documento.
 
 ### Despesas
 
@@ -466,7 +476,7 @@ analise-bordero-fluminense/
 │   └── DER - Fluminense_borderô.png  (existe)
 │
 ├── database/
-│   ├── schema.sql                    (DDL MySQL — a implementar)
+│   ├── schema_mysql_revisado.sql     (DDL MySQL — esquema revisado)
 │   └── seeds.sql                     (a implementar)
 │
 ├── scripts/
@@ -512,7 +522,8 @@ O diagrama da modelagem (DER) está em [`images/DER - Fluminense_borderô.png`](
 * [x] Criação do dicionário de dados
 * [x] Definição do MySQL local como banco principal do projeto
 * [ ] Configuração do ambiente MySQL local
-* [ ] Adaptação e implementação do DDL para MySQL (`database/schema.sql`)
+* [x] Adaptação do DDL para MySQL e revisão de `INGRESSO_PARTIDA` para preservar descrições originais e aceitar setor/categoria não informados
+* [ ] Teste de instalação limpa e validação das restrições do DDL revisado
 * [x] Organização inicial dos PDFs originais (`data/raw/`) e das transcrições Excel (`data/interim/`)
 * [ ] Conclusão do inventário das partidas e dos borderôs disponíveis da temporada 2026
 * [ ] Revisão cruzada das transcrições com os PDFs originais
