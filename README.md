@@ -4,19 +4,19 @@ Projeto de análise de dados voltado ao estudo da relação entre **preços de i
 
 O projeto busca construir uma base de dados estruturada a partir dos borderôs e integrá-la posteriormente a outras fontes de informação, permitindo análises exploratórias e estatísticas sobre a **demanda por ingressos, ocupação e desempenho financeiro das partidas**.
 
-> **Status:** Em desenvolvimento — fase de planejamento e modelagem
+> **Status:** Em desenvolvimento — transcrição e validação dos borderôs da temporada 2026; preparação da implementação do banco local
 
 ### Resumo do projeto
 
 | | |
 | --- | --- |
 | **Pergunta** | Como preço, contexto da partida e perfil do jogo se relacionam com público, ocupação e receita de bilheteria do Fluminense? |
-| **Fonte** | Borderôs de jogos do Fluminense como mandante, divulgados publicamente pelo clube (PDFs) no [Portal da Transparência do Fluminense](https://transparenciafluminense.com.br/public/lista/124/arenas/operacao-de-jogos/borderos). Período e quantidade de jogos: **a definir**. |
-| **Já existe** | Dicionário de dados, modelagem relacional (DER), metodologia dos atributos da partida e roadmap, em [`docs/`](docs/) e [`images/`](images/). |
-| **Ainda não existe** | Coleta dos borderôs, extração, banco PostgreSQL, análises e dashboard (as pastas `data/`, `scripts/`, `database/` e `powerbi/` estão reservadas). |
-| **Tecnologias planejadas** | PostgreSQL, SQL, Python, Power BI. |
+| **Fonte** | Borderôs de jogos do Fluminense como mandante, divulgados publicamente pelo clube (PDFs) no [Portal da Transparência do Fluminense](https://transparenciafluminense.com.br/public/lista/124/arenas/operacao-de-jogos/borderos). Amostra inicial: temporada **2026**. |
+| **Já existe** | Modelagem relacional (DER), dicionário de dados, metodologia dos atributos, PDFs originais e planilhas Excel de transcrição da maior parte dos jogos de 2026. |
+| **Em andamento / pendente** | Conclusão do inventário e das validações, transcrição dos documentos ainda disponíveis, implementação do banco local MySQL, pipeline ETL, análises e dashboard. |
+| **Tecnologias** | MySQL local, SQL, Python, Excel e Power BI. |
 
-Nenhum resultado analítico foi produzido até o momento.
+A coleta e a transcrição da temporada 2026 estão em andamento; algumas partidas ainda não possuem borderô disponível. As análises e o dashboard ainda não foram produzidos.
 
 ---
 
@@ -81,7 +81,7 @@ Informações que não estejam disponíveis nos borderôs poderão ser obtidas e
 
 Os dados não serão armazenados diretamente no formato dos PDFs.
 
-A proposta é transformar as informações dos borderôs em uma estrutura relacional utilizando **PostgreSQL**, permitindo posteriormente sua utilização em ferramentas de Business Intelligence.
+A proposta é transformar as informações dos borderôs em uma estrutura relacional utilizando **MySQL em ambiente local**. O banco será acessado pelos scripts Python e pelo Power BI, sem necessidade de hospedagem na nuvem para o escopo atual. O modelo havia sido inicialmente criado no Supabase com PostgreSQL; a decisão atual é adaptar e implementar a estrutura no MySQL instalado localmente.
 
 Fluxo planejado:
 
@@ -92,18 +92,20 @@ Extração e padronização
    ↓
 Modelagem dos dados
    ↓
-PostgreSQL
+Planilhas Excel (interim)
    ↓
-Integração com outras fontes
+ETL e validações com Python
    ↓
-Tratamento e transformação
+MySQL local
+   ↓
+Consultas SQL e integração com fontes complementares
    ↓
 Análises
    ↓
 Power BI
 ```
 
-Os PDFs originais serão tratados como fontes documentais/raw, enquanto os dados estruturados serão armazenados no banco de dados.
+Os PDFs originais são preservados em `data/raw/`. As transcrições revisadas em Excel ficam em `data/interim/` e funcionam como etapa intermediária para validação e carga. Os dados estruturados serão armazenados no MySQL local. O Supabase/PostgreSQL foi utilizado na etapa inicial de modelagem/prototipagem, mas não será a plataforma principal do projeto.
 
 ---
 
@@ -165,13 +167,23 @@ As informações de bilheteria são estruturadas em diferentes níveis:
 
 A tabela `INGRESSO_PARTIDA` concentra informações específicas daquela oferta de ingresso na partida, como:
 
+* descrição original da linha do borderô (`descricao_original`);
+* setor, quando informado;
+* categoria do ingresso, quando informada;
+* plano de sócio, quando aplicável;
 * preço;
 * quantidade disponível;
 * quantidade devolvida;
 * quantidade utilizada;
 * arrecadação.
 
-Essa estrutura permite analisar, por exemplo, como diferentes preços e categorias se comportam dentro de cada setor.
+**Tratamento de classificações ausentes:** alguns itens dos borderôs, como ingressos promocionais, camarotes promocionais, cadeiras cativas, tribuna e gratuidades por lei, podem não apresentar setor ou categoria. Por isso, `id_setor` e `id_categoria` aceitam `NULL` em `INGRESSO_PARTIDA`. A descrição original é obrigatória e preserva o texto do documento, sem criar setores ou categorias artificiais.
+
+O campo `id_plano` também aceita `NULL` quando não há plano de sócio associado. Preço e arrecadação permanecem nulos quando o borderô não informa esses valores; zero continua sendo tratado como valor informado, distinto de ausência.
+
+A restrição de unicidade considera a partida, as chaves técnicas das classificações (com `NULL` representado por zero apenas nessas colunas geradas) e a descrição original. Isso permite preservar linhas distintas mesmo quando setor ou categoria não estão especificados.
+
+Essa estrutura permite analisar, por exemplo, como diferentes preços e categorias se comportam dentro de cada setor, sem descartar itens cuja classificação não esteja explícita no documento.
 
 ### Despesas
 
@@ -230,71 +242,82 @@ Os indicadores `e_classico` e `e_clube_g12` ficam em `ADVERSARIO`, conforme o DE
 
 ### Importância da partida
 
-`importancia_partida` será representada por uma escala de **0 a 10**.
+`importancia_partida` será representada por uma escala analítica de **0 a 10**. Ela mede a relevância esportiva da partida para a competição e para a situação do Fluminense naquele momento.
 
-A pontuação buscará considerar fatores como:
+A avaliação parte da **competição e da fase/rodada**, mas esses fatores não determinam a nota sozinhos: o contexto esportivo pode elevar significativamente a importância. A pontuação deve considerar informações conhecidas antes do início do jogo, sem usar o resultado final ou o quanto a partida acabou sendo emocionante.
 
-* competição;
-* fase da competição;
-* situação do Fluminense na competição;
-* disputa por título;
-* disputa por classificação;
-* disputa por vagas em competições;
-* disputa contra rebaixamento;
-* caráter eliminatório;
-* proximidade de uma decisão;
-* importância específica daquele confronto dentro da competição.
+| Nota | Critério | Exemplo ilustrativo |
+|---:|---|---|
+| **0** | Amistoso ou jogo-treino sem consequência esportiva relevante. | Amistoso de pré-temporada contra equipe regional. |
+| **1** | Partida oficial de importância muito baixa, sem objetivo imediato relevante. | Rodada inicial do Carioca com classificação já assegurada e sem disputa significativa. |
+| **2** | Alguma relevância competitiva, mas pouco impacto provável na classificação ou no objetivo da equipe. | Fase inicial do Carioca sem pressão pela classificação. |
+| **3** | Jogo regular com consequências limitadas, ainda dentro da disputa por pontos ou classificação. | Rodada intermediária do Brasileirão contra equipe do meio da tabela, sem disputa direta importante. |
+| **4** | Importância normal de uma partida de campeonato, sem consequência excepcional. | Jogo comum do Brasileirão em rodada sem impacto extraordinário. |
+| **5** | Contribui de maneira relevante para um objetivo esportivo concreto. | Vitória necessária para manter o Fluminense próximo da zona de classificação à Libertadores. |
+| **6** | Impacto importante em disputa direta por classificação, liderança, vaga ou permanência. | Confronto contra concorrente direto na luta contra o rebaixamento, com poucos pontos de diferença. |
+| **7** | Alto impacto na competição ou em fase eliminatória importante. | Jogo de volta de oitavas de final da Libertadores com a classificação em aberto. |
+| **8** | Muito decisiva para um objetivo relevante, com pouca margem para recuperação. | Semifinal de Copa do Brasil ou última rodada em que uma vitória garante vaga continental. |
+| **9** | Pode praticamente definir um objetivo esportivo excepcionalmente importante. | Última rodada do Brasileirão em que vencer garante a permanência, sem depender de outros resultados. |
+| **10** | Decisão máxima ou consequência esportiva extraordinária, com o principal objetivo diretamente em jogo. | Final da Libertadores de 2023 entre Fluminense e Boca Juniors, valendo o título continental. |
 
-A escala terá caráter **metodológico e analítico**, e não oficial.
+**Regras de aplicação:**
 
-Como princípio inicial, competições e fases mais relevantes terão maior peso, mas a situação específica da partida poderá alterar sua pontuação.
-
-Por exemplo:
-
-* amistoso tende a apresentar baixa importância;
-* partida comum do Carioca tende a apresentar baixa importância;
-* partidas de mata-mata possuem importância crescente conforme avançam as fases;
-* uma partida de Brasileirão pode receber pontuação elevada quando estiver diretamente relacionada a uma disputa importante;
-* finais e decisões de grande relevância podem atingir pontuação próxima de 10.
-
-A metodologia definitiva de pontuação será documentada antes da aplicação ao conjunto completo de partidas.
+- A competição e a fase definem a referência inicial; uma final não recebe automaticamente nota 10.
+- O contexto pode elevar bastante a nota: uma rodada comum pode chegar a 9 ou 10 se decidir diretamente um título, uma classificação excepcional ou a permanência.
+- Avalie o cenário conhecido antes da partida. Não aumente a nota devido ao resultado, aos gols ou à emoção observada depois.
+- O tamanho ou a fama do adversário não aumenta diretamente a importância; esse fator é avaliado em `apelo_adversario`.
+- Use notas extremas com justificativa clara e compare jogos semelhantes para manter a escala consistente.
 
 ### Apelo do adversário
 
-`apelo_adversario` também será representado por uma escala de **0 a 10**.
+`apelo_adversario` também utiliza uma escala analítica de **0 a 10**. Mede o potencial de atração associado ao adversário, considerando **história, popularidade e relevância atual na temporada**. Não mede a importância esportiva da partida nem apenas a qualidade técnica da equipe.
 
-A avaliação considera a relevância do adversário no contexto histórico em que a partida ocorreu.
+| Nota | Critério | Exemplo ilustrativo |
+|---:|---|---|
+| **0** | Apelo praticamente inexistente para o público geral. | Clube fictício de expressão local mínima, sem histórico relevante ou torcida expressiva. |
+| **1** | Apelo muito baixo e reconhecimento restrito à região. | Pequeno clube regional pouco conhecido nacionalmente. |
+| **2** | Apelo baixo, mas com alguma identidade regional ou presença nacional ocasional. | Clube de pouca torcida e pouca exposição, vindo de divisão inferior. |
+| **3** | Apelo modesto, conhecido principalmente por quem acompanha o futebol brasileiro. | Clube tradicional de seu estado, mas com alcance nacional limitado. |
+| **4** | Apelo regional ou nacional moderado, com torcida reconhecível e alguma história competitiva. | Clube de tradição estadual e presença ocasional em competições nacionais. |
+| **5** | Apelo intermediário, com história ou torcida relevante, sem grande destaque nacional naquele momento. | Clube tradicional de uma capital brasileira, com torcida expressiva regionalmente. |
+| **6** | Apelo considerável, com reconhecimento nacional, torcida significativa ou relevância recente. | Clube que disputa frequentemente a Série A ou ganhou destaque nacional recente. |
+| **7** | Apelo alto, com grande torcida, tradição nacional ou presença frequente em disputas importantes. | Clube tradicional da Série A com torcida nacionalmente conhecida. |
+| **8** | Apelo muito alto, combinando tradição, torcida expressiva e grande exposição nacional ou internacional. | Grande clube brasileiro em temporada de destaque, mesmo fora de um clássico local. |
+| **9** | Apelo excepcional, com reconhecimento nacional/internacional e relevância histórica ou atual muito elevada. | River Plate ou Boca Juniors em temporada de destaque continental. |
+| **10** | Apelo máximo no universo analisado, com enorme reconhecimento, capacidade de mobilização e relevância histórica ou atual. Vários clubes podem atingir essa nota. | Boca Juniors na final da Libertadores de 2023 contra o Fluminense. |
 
-Entre os fatores considerados estão:
+Os exemplos são referências de calibração, não um ranking definitivo e imutável de clubes.
 
-* força e relevância nacional;
-* relevância continental;
-* tamanho e tradição do clube;
-* participação em disputas relevantes;
-* condição de clube emergente;
-* pertencimento ao G12;
-* relevância histórica do confronto;
-* contexto esportivo do adversário no período analisado.
+**Regras de aplicação:**
 
-A classificação não será fixa para todos os períodos históricos. Um clube que possua pouca relevância em determinado período poderá apresentar maior apelo em outro momento caso sua importância esportiva aumente.
+- Avalie o apelo do adversário **no momento da partida, considerando a temporada em curso**. O apelo pode mudar entre temporadas e ao longo de uma temporada quando houver mudança relevante de contexto.
+- História e popularidade importam, mas a relevância atual também deve pesar.
+- Não use apenas a divisão disputada nem apenas a torcida histórica.
+- `e_classico` e `e_clube_g12` são indicadores separados e não determinam automaticamente a nota de apelo.
+- A condição de final pertence à importância da partida; não atribua apelo 10 apenas porque o jogo é uma decisão.
+- Justifique notas extremas e aplique o mesmo critério a adversários e períodos comparáveis.
 
-Como referência geral, a hierarquia tende a considerar:
+### Aplicação conjunta dos atributos
 
-```text
-Grandes clubes nacionais / principais clássicos
-        ↓
-Grandes clubes continentais
-        ↓
-Clubes nacionais fortes ou emergentes
-        ↓
-Clubes internacionais emergentes
-        ↓
-Clubes de menor expressão
-        ↓
-Clubes de baixa relevância nacional/continental
-```
+Os dois atributos são independentes. Exemplos ilustrativos:
 
-Essa classificação será documentada e aplicada de maneira consistente.
+| Situação | `importancia_partida` | `apelo_adversario` | Interpretação |
+|---|---:|---:|---|
+| Grande clube brasileiro em rodada comum do Brasileirão | 4 | 8 | Jogo regular contra adversário de grande apelo. |
+| Clube de pouca expressão em partida decisiva contra o rebaixamento | 9 | 2 | Importância esportiva muito alta, apesar do baixo apelo do adversário. |
+| Boca Juniors na fase de grupos da Libertadores, sem decisão imediata | 4–6 | 9–10 | A importância depende da situação no grupo; o apelo do adversário pode continuar muito alto. |
+| Fluminense x Boca Juniors, final da Libertadores de 2023 | 10 | 10 | Decisão continental histórica contra adversário de enorme reconhecimento. |
+
+### Registro e consistência
+
+Quando possível, registrar uma justificativa curta para cada nota na planilha de transcrição, por exemplo:
+
+- `justificativa_importancia`: "Final única da Libertadores, valendo o título continental."
+- `justificativa_apelo`: "Boca Juniors: enorme tradição e reconhecimento continental."
+
+As justificativas podem permanecer na planilha e na documentação metodológica; não é obrigatório criar novas colunas no PostgreSQL nesta etapa.
+
+A pontuação deve ser definida com base em informações disponíveis antes do início da partida. Notas extremas (0, 1, 9 e 10) devem ter justificativa clara. Mudanças futuras nos critérios devem ser documentadas e versionadas; notas históricas não devem ser alteradas retroativamente sem uma regra explícita.
 
 ### Indicadores do adversário
 
@@ -426,7 +449,7 @@ A análise poderá considerar diferentes níveis de:
 ## 🛠️ Tecnologias planejadas
 
 * **Python** — extração, tratamento e preparação dos dados
-* **PostgreSQL** — armazenamento e gerenciamento dos dados
+* **MySQL** — armazenamento e gerenciamento local dos dados
 * **SQL** — consultas e transformação dos dados
 * **Power BI** — análise e visualização
 * **Git/GitHub** — versionamento e documentação
@@ -453,15 +476,16 @@ analise-bordero-fluminense/
 │   └── DER - Fluminense_borderô.png  (existe)
 │
 ├── database/
-│   ├── schema.sql                    (planejado)
-│   └── seeds.sql                     (planejado)
+│   ├── schema_mysql_revisado.sql     (DDL MySQL — esquema revisado)
+│   └── seeds.sql                     (a implementar)
 │
 ├── scripts/
 │   ├── extraction/
 │   └── transformation/
 │
 ├── data/
-│   ├── raw/
+│   ├── raw/          (PDFs originais dos borderôs)
+│   ├── interim/      (planilhas Excel de transcrição por partida)
 │   └── processed/
 │
 └── powerbi/
@@ -492,15 +516,18 @@ O diagrama da modelagem (DER) está em [`images/DER - Fluminense_borderô.png`](
 * [x] Definição inicial do tratamento da série histórica de sócios
 * [x] Definição do modelo conceitual
 * [x] Definição e documentação do modelo lógico (DER)
-* [ ] Definição da metodologia de `importancia_partida`
-* [ ] Definição da metodologia de `apelo_adversario`
+* [x] Definição da metodologia de `importancia_partida` (escala 0–10 documentada)
+* [x] Definição da metodologia de `apelo_adversario` (escala 0–10 documentada)
 * [ ] Definição do G12 utilizado na análise
 * [x] Criação do dicionário de dados
-* [ ] Configuração do PostgreSQL
-* [ ] Desenvolvimento da estrutura do banco
-* [ ] Desenvolvimento da extração dos borderôs
-* [ ] Validação dos dados extraídos
-* [ ] Coleta dos borderôs
+* [x] Definição do MySQL local como banco principal do projeto
+* [ ] Configuração do ambiente MySQL local
+* [x] Adaptação do DDL para MySQL e revisão de `INGRESSO_PARTIDA` para preservar descrições originais e aceitar setor/categoria não informados
+* [ ] Teste de instalação limpa e validação das restrições do DDL revisado
+* [x] Organização inicial dos PDFs originais (`data/raw/`) e das transcrições Excel (`data/interim/`)
+* [ ] Conclusão do inventário das partidas e dos borderôs disponíveis da temporada 2026
+* [ ] Revisão cruzada das transcrições com os PDFs originais
+* [ ] Desenvolvimento do ETL para carregar as planilhas no banco
 * [ ] Integração com fontes complementares
 * [ ] Tratamento e transformação dos dados
 * [ ] Análise exploratória
@@ -546,8 +573,8 @@ O objetivo é que o projeto não seja apenas um dashboard final, mas um exemplo 
 
 Este projeto encontra-se em fase de desenvolvimento.
 
-O modelo conceitual e lógico está documentado no DER, no documento de modelagem e no dicionário de dados. A próxima fase é implementar o esquema no PostgreSQL, validar a estrutura com um conjunto pequeno de borderôs e iniciar a coleta sistemática.
+O modelo conceitual e lógico está documentado no DER, no documento de modelagem e no dicionário de dados. A maior parte dos borderôs disponíveis da temporada 2026 já foi transcrita em planilhas Excel individuais, armazenadas em `data/interim/`, enquanto os PDFs originais são preservados em `data/raw/`. Algumas partidas permanecem pendentes porque seus borderôs ainda não foram disponibilizados. A próxima fase é concluir o inventário e a revisão cruzada das transcrições, adaptar o modelo para MySQL e implementar o banco local antes de desenvolver a carga ETL.
 
-Os critérios operacionais e exemplos definitivos para pontuar `importancia_partida` e `apelo_adversario`, assim como a definição do período da amostra, ainda precisam ser fechados antes das análises completas. As análises, conclusões e visualizações ainda não foram finalizadas.
+Os critérios e exemplos de pontuação para `importancia_partida` e `apelo_adversario` estão documentados em [Metodologia dos atributos da partida](docs/07_metodologia_atributos_partida.md). O período da amostra ainda precisa ser definido antes das análises completas. As análises, conclusões e visualizações ainda não foram finalizadas.
 
 Resultados apresentados futuramente serão baseados nos dados coletados e na metodologia documentada neste repositório.
