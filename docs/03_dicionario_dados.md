@@ -1,14 +1,15 @@
 # Dicionário de Dados
 
-Este documento descreve as tabelas e os campos definidos para a estruturação dos dados do projeto.
+Este documento descreve as tabelas e os campos definidos para a estruturação dos dados do projeto. O esquema implementado utiliza **MySQL 8**. O DDL correspondente está em [`database/schema_mysql_analise_bordero_fluminense.sql`](../database/schema_mysql_analise_bordero_fluminense.sql).
 
 ## Convenções
 
 - PK = chave primária.
 - FK = chave estrangeira.
-- NULL significa que o valor não se aplica ou não está disponível segundo a regra documentada; não significa automaticamente zero.
-- Valores monetários serão armazenados com precisão decimal adequada.
-- Nomes de despesas devem preservar a nomenclatura apresentada no borderô.
+- `NULL` significa que o valor não se aplica ou não está disponível segundo a regra documentada; não significa automaticamente zero.
+- Valores monetários são armazenados com tipos `DECIMAL`, evitando representação aproximada de valores financeiros.
+- Nomes e descrições originais do borderô devem ser preservados.
+- Campos gerados pelo MySQL são calculados pelo banco e não devem ser preenchidos diretamente pelo ETL.
 
 ## 1. PARTIDA
 
@@ -32,8 +33,8 @@ Representa o clube adversário, identificado por nome padronizado e com indicado
 |---|---|---:|---|---|
 | `id_adversario` | INT | Sim | Interno | Identificador único. PK. |
 | `nome` | VARCHAR | Sim | Fonte oficial | Nome padronizado do adversário. Único. |
-| `e_classico` | BOOLEAN | Sim | Metodológico | Indica se o adversário é classificado como clássico para o projeto. Definir e documentar o critério. |
-| `e_clube_g12` | BOOLEAN | Sim | Metodológico | Indica se o adversário pertence ao G12 adotado pelo projeto. Definir e documentar a composição do grupo. |
+| `e_classico` | BOOLEAN | Sim | Metodológico | Indica se o adversário é classificado como clássico para o projeto. |
+| `e_clube_g12` | BOOLEAN | Sim | Metodológico | Indica se o adversário pertence ao G12 adotado pelo projeto. |
 
 Os dois indicadores são atributos de `ADVERSARIO` no modelo atual. `apelo_adversario` continua em `ATRIBUTOS_PARTIDA`, pois é avaliado para cada partida/contexto histórico.
 
@@ -103,28 +104,33 @@ Detalha o plano de sócio quando aplicável.
 | `id_plano` | INT | Sim | Interno | Identificador único. PK. |
 | `nome` | VARCHAR | Sim | Borderô | Nome do plano/modalidade de sócio. Único. |
 
-Em INGRESSO_PARTIDA, `id_plano` pode ser NULL quando não se aplica.
+Em INGRESSO_PARTIDA, `id_plano` pode ser NULL quando não se aplica ou quando a fonte não permite identificar o plano.
 
 ## 10. INGRESSO_PARTIDA
 
-Representa uma linha de ingresso específica da partida, setor, categoria e, quando aplicável, plano.
+Representa uma linha de ingresso específica de uma partida. As classificações por setor, categoria e plano são associadas quando a informação está disponível no borderô.
 
 | Campo | Tipo | Obrigatório | Origem | Descrição / regra |
 |---|---|---:|---|---|
 | `id_ingresso_partida` | INT | Sim | Interno | Identificador único. PK. |
-| `id_partida` | INT | Sim | Borderô | FK para PARTIDA. |
-| `id_setor` | INT | Sim | Borderô | FK para SETOR. |
-| `id_categoria` | INT | Sim | Borderô | FK para CATEGORIA_INGRESSO. |
-| `id_plano` | INT | Não | Borderô | FK para PLANO_SOCIO; NULL quando não aplicável. |
-| `preco` | DECIMAL(10,2) | Não | Borderô | Preço unitário da linha. |
+| `id_partida` | INT | Sim | Interno | FK para PARTIDA. |
+| `descricao_original` | VARCHAR(255) | Sim | Borderô | Descrição literal da linha no borderô. Deve ser preservada para rastreabilidade e diferenciação de linhas. |
+| `id_setor` | INT | Não | Borderô | FK para SETOR. NULL quando o borderô não especifica o setor ou não permite identificá-lo com segurança. |
+| `id_categoria` | INT | Não | Borderô | FK para CATEGORIA_INGRESSO. NULL quando o borderô não especifica a categoria ou não permite identificá-la com segurança. |
+| `id_plano` | INT | Não | Borderô | FK para PLANO_SOCIO. NULL quando não se aplica ou quando a fonte não informa o plano. |
+| `preco` | DECIMAL(10,2) | Não | Borderô | Preço unitário da linha. NULL quando não informado. |
 | `quantidade_disponivel` | INT | Não | Borderô | Quantidade disponível apresentada. |
 | `quantidade_devolvida` | INT | Não | Borderô | Quantidade devolvida apresentada. |
 | `quantidade_utilizada` | INT | Não | Borderô | Quantidade utilizada apresentada. |
-| `arrecadacao` | DECIMAL(12,2) | Não | Borderô | Arrecadação da linha. |
+| `arrecadacao` | DECIMAL(12,2) | Não | Borderô | Arrecadação da linha. NULL quando não informada. |
 
-A combinação de negócio `(id_partida, id_setor, id_categoria, id_plano)` não deve gerar registros duplicados. Como `id_plano` pode ser `NULL`, a implementação do banco deve tratar explicitamente a unicidade para esse caso.
+### Unicidade e colunas geradas
 
-As definições de disponível, devolvido e utilizado serão preservadas conforme a nomenclatura da fonte, sem interpretações adicionais não validadas.
+A regra de unicidade considera a partida, os identificadores de setor, categoria e plano e a descrição original. Como os identificadores de classificação podem ser NULL, o DDL MySQL utiliza as colunas geradas `id_setor_chave`, `id_categoria_chave` e `id_plano_chave`, que normalizam os valores nulos para compor a restrição UNIQUE. Essas colunas são calculadas pelo banco e não devem ser incluídas nos comandos INSERT do ETL.
+
+### Regra para valores ausentes
+
+NULL significa que a informação não se aplica ou não está disponível na fonte, conforme o caso. Não deve ser convertido automaticamente em zero. Zero deve ser preservado quando for um valor explicitamente informado no borderô.
 
 ## 11. DESPESA_PARTIDA
 
@@ -133,9 +139,9 @@ Representa cada linha de despesa apresentada no borderô.
 | Campo | Tipo | Obrigatório | Origem | Descrição / regra |
 |---|---|---:|---|---|
 | `id_despesa` | INT | Sim | Interno | Identificador único. PK. |
-| `id_partida` | INT | Sim | Borderô | FK para PARTIDA. |
+| `id_partida` | INT | Sim | Interno | FK para PARTIDA. |
 | `nome` | VARCHAR | Sim | Borderô | Nome original da despesa. |
-| `valor` | DECIMAL(12,2) | Não | Borderô | Valor da linha. |
+| `valor` | DECIMAL(12,2) | Não | Borderô | Valor da linha. NULL quando não informado. |
 
 Não haverá inicialmente uma tabela TIPO_DESPESA.
 
@@ -180,7 +186,7 @@ Esses índices não são dados oficiais do borderô. Os indicadores `e_classico`
 
 ## 15. DESEMPENHO_PARTIDA
 
-Representa a situação esportiva do Fluminense antes da partida.
+Representa a situação do Fluminense antes da partida.
 
 | Campo | Tipo | Obrigatório | Origem | Descrição / regra |
 |---|---|---:|---|---|
@@ -205,11 +211,11 @@ Fase, jogo de ida/volta e situação do confronto poderão ser representados em 
 
 O Portal da Transparência disponibiliza uma série mensal com informações de sócios adimplentes e inadimplentes.
 
-Inicialmente essa série será tratada como **fonte externa para o Power BI**, sem tabela obrigatória no PostgreSQL. A decisão poderá ser revista se a integração ao banco trouxer benefício analítico.
+Inicialmente essa série será tratada como **fonte externa para o Power BI**, sem tabela obrigatória no modelo relacional. A decisão poderá ser revista se a integração ao banco trouxer benefício analítico.
 
 ## Regras gerais de qualidade
 
-1. Preservar os valores do borderô antes das transformações.
+1. Preservar os valores e as descrições do borderô antes das transformações.
 2. Identificar claramente valores derivados.
 3. Documentar critérios das variáveis metodológicas antes da análise.
 4. Não utilizar o resultado da própria partida no desempenho pré-jogo.
@@ -217,3 +223,5 @@ Inicialmente essa série será tratada como **fonte externa para o Power BI**, s
 6. Investigar diferenças entre totais calculados e oficiais.
 7. Manter o resumo financeiro oficial separado do detalhamento.
 8. Preservar a nomenclatura original das despesas.
+9. Não preencher classificações ausentes com categorias inventadas.
+10. Não inserir diretamente valores nas colunas geradas pelo MySQL.
