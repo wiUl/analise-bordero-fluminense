@@ -159,6 +159,7 @@ Tabela 1:1 com PARTIDA para armazenar os valores consolidados oficialmente apres
 | `total_despesas` | DECIMAL(14,2) | Não | Borderô | Total oficial de despesas. |
 | `retencoes` | DECIMAL(14,2) | Não | Borderô | Retenções oficiais. |
 | `receita_liquida` | DECIMAL(14,2) | Não | Borderô | Receita líquida oficial. |
+| `consignatarios` | DECIMAL(14,2) | Não | Borderô | Valor destinado às instituições consignatárias, descontado da receita líquida quando o resultado é positivo. NULL quando não informado no borderô; não substituir por zero. |
 | `resultado_final` | DECIMAL(14,2) | Não | Borderô | Resultado final oficial. |
 | `complemento_contabil` | DECIMAL(14,2) | Não | Borderô | Complemento contábil quando apresentado separadamente. |
 

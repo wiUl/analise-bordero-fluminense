@@ -141,6 +141,7 @@ CREATE TABLE resumo_financeiro_partida (
   total_despesas DECIMAL(14,2),
   retencoes DECIMAL(14,2),
   receita_liquida DECIMAL(14,2),
+  consignatarios DECIMAL(14,2),
   resultado_final DECIMAL(14,2),
   complemento_contabil DECIMAL(14,2),
   CONSTRAINT chk_resumo_disponivel CHECK (total_disponivel IS NULL OR total_disponivel >= 0),
@@ -197,5 +198,7 @@ CREATE TABLE desempenho_partida (
 -- * id_setor e id_categoria são opcionais em ingresso_partida porque alguns
 --   itens do borderô não apresentam essas classificações.
 -- * A reconciliação entre detalhes e resumo oficial será feita no ETL.
+-- * consignatarios registra o valor oficial destinado às instituições consignatárias;
+--   não calcular nem substituir NULL por zero.
 -- * O complemento_contabil não deve ser somado automaticamente à arrecadação.
 -- * Divergências devem ser auditadas, preservando os valores originais do borderô.

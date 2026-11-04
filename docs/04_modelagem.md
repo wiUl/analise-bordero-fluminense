@@ -62,9 +62,9 @@ Armazena cada linha de despesa apresentada no borderô, mantendo `nome` conforme
 
 ### RESUMO_FINANCEIRO_PARTIDA
 
-Relação 1:1 com `PARTIDA`, identificada por `id_partida`, para registrar totais consolidados oficiais do borderô: ingressos disponíveis, devolvidos e utilizados; arrecadação bruta; despesas; retenções; receita líquida; resultado final; e complemento contábil, quando informado.
+Relação 1:1 com `PARTIDA`, identificada por `id_partida`, para registrar totais consolidados oficiais do borderô: ingressos disponíveis, devolvidos e utilizados; arrecadação bruta; despesas; retenções; receita líquida; consignatários; resultado final; e complemento contábil, quando informado. `consignatarios` registra o valor destinado às instituições consignatárias, descontado da receita líquida quando o resultado é positivo. O valor deve ser transcrito do borderô, sem ser calculado; quando não estiver informado, deve permanecer `NULL`.
 
-Esta tabela é deliberadamente mantida separada dos detalhes. Sua função é possibilitar reconciliação e auditoria entre os totais oficiais e os valores calculados a partir das linhas de ingresso e despesa. Diferenças devem ser investigadas, não ajustadas automaticamente. `complemento_contabil` não deve ser somado automaticamente à arrecadação de ingressos.
+Esta tabela é deliberadamente mantida separada dos detalhes. Sua função é possibilitar reconciliação e auditoria entre os totais oficiais e os valores calculados a partir das linhas de ingresso e despesa. Diferenças devem ser investigadas, não ajustadas automaticamente. `consignatarios` e `complemento_contabil` não devem ser somados automaticamente à arrecadação de ingressos.
 
 ### CONTEXTO_PARTIDA
 

@@ -509,7 +509,107 @@ print(f"{cursor.rowcount} registros de ingressos inseridos.") """
 
 
 # ============================================================
-# 9. ENCERRAMENTO DA CONEXÃO
+# 9. ORGANIZAÇÃO DAS DESPESAS DA PARTIDA
+# ============================================================
+
+
+df_despesas_final = df_despesas[['nome_original', 'valor']].copy()
+df_despesas_final = df_despesas_final.rename(columns={'nome_original': 'nome'})
+df_despesas_final.insert(0, 'id_partida', id_partida)
+
+df_despesas_final = df_despesas_final.astype(object).where(pd.notna(df_despesas_final), None)
+
+
+registros_despesas = list(df_despesas_final.itertuples(index=False, name=None))
+
+""" sql_despesas = "INSERT INTO despesa_partida (id_partida, nome, valor) VALUES (%s, %s, %s)"
+
+cursor.executemany(sql_despesas, registros_despesas)
+conexao.commit() """
+
+
+# ============================================================
+# 10. ORGANIZAÇÃO DO RESUMO FINANCEIRO
+# ============================================================
+
+df_resumo = pd.read_excel(selecionado, sheet_name="RESUMO", header=4)
+
+""" print(df_resumo.info())
+print(df_resumo.columns)
+print(df_resumo.shape)
+print(df_resumo.dtypes)
+print(df_resumo.isna().sum()) """
+
+df_resumo = df_resumo[['campo_modelo', 'valor_oficial_no_bordero']]
+df_resumo = df_resumo.set_index('campo_modelo')[['valor_oficial_no_bordero']].T
+
+df_resumo_final = df_resumo[['total_disponivel', 'total_devolvido', 'total_utilizado', 'arrecadacao_bruta','total_despesas', 'retencoes', 'receita_liquida', 'consignatários', 'resultado_final', 'complemento_contabil']]
+df_resumo_final = df_resumo_final.rename(columns={'consignatários': 'consignatarios'})
+df_resumo_final.insert(0, 'id_partida', id_partida)
+df_resumo_final = df_resumo_final.astype(object).where(pd.notna(df_resumo_final), None)
+
+registros_resumo = next(df_resumo_final.itertuples(index=False, name=None))
+
+""" sql_resumo = 'INSERT INTO resumo_financeiro_partida (id_partida, total_disponivel, total_devolvido, total_utilizado, arrecadacao_bruta, total_despesas, retencoes, receita_liquida, consignatarios, resultado_final, complemento_contabil) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+cursor.execute(sql_resumo, registros_resumo)
+conexao.commit() """
+
+# ============================================================
+# 11. ORGANIZAÇÃO DO CONTEXTO DA PARTIDA
+# ============================================================
+
+df_contexto = pd.read_excel(selecionado, sheet_name="CONTEXTO", header=3)
+df_contexto_final = df_contexto[['Campo do modelo', 'Valor a preencher']]
+
+valores_contexto = (df_contexto_final.set_index('Campo do modelo')['Valor a preencher'].to_dict())
+
+mapa_feriado = {'Sim': True, 'Não': False}
+valores_contexto['feriado'] = mapa_feriado[valores_contexto['feriado']]
+
+registro_contexto = (
+    id_partida,
+    valores_contexto['feriado'],
+    valores_contexto['dias_desde_ultimo_jogo_maracana']
+)
+
+""" sql_contexto = 'INSERT INTO contexto_partida (id_partida, feriado, dias_desde_ultimo_jogo_maracana) VALUES (%s,%s,%s)'
+cursor.execute(sql_contexto, registro_contexto)
+conexao.commit() """
+
+
+# ============================================================
+# 12. ORGANIZAÇÃO DOS ATRIBUTOS DA PARTIDA
+# ============================================================
+
+df_atributos = pd.read_excel(selecionado, sheet_name="ATRIBUTOS", header=3)
+df_atributos = df_atributos[['Campo do modelo', 'Valor (0–10)']]
+
+valores_atributos = (df_atributos.set_index('Campo do modelo')['Valor (0–10)'].to_dict())
+
+
+registro_atributos = (id_partida, valores_atributos['importancia_partida'], valores_atributos['apelo_adversario'])
+
+""" sql_atributos = 'INSERT INTO atributos_partida (id_partida, importancia_partida, apelo_adversario) VALUES (%s,%s,%s)'
+cursor.execute(sql_atributos,registro_atributos)
+conexao.commit() """
+
+# ============================================================
+# 13. ORGANIZAÇÃO DO DESEMPENHO RECENTE
+# ============================================================
+
+df_desempenho = pd.read_excel(selecionado, sheet_name="DESEMPENHO", header=3)
+df_desempenho = df_desempenho[['Campo do modelo', 'Valor a preencher']]
+
+valores_desempenho = (df_desempenho.set_index('Campo do modelo')['Valor a preencher'].to_dict())
+
+registro_desempenho = (id_partida, valores_desempenho['posicao_fluminense'], valores_desempenho['pontos_fluminense'], valores_desempenho['vitorias_ultimos_5'], valores_desempenho['empates_ultimos_5'], valores_desempenho['derrotas_ultimos_5'], valores_desempenho['gols_marcados_ultimos_5'], valores_desempenho['gols_sofridos_ultimos_5'])
+
+""" sql_desempenho = 'INSERT INTO desempenho_partida (id_partida, posicao_fluminense, pontos_fluminense, vitorias_ultimos_5, empates_ultimos_5, derrotas_ultimos_5, gols_marcados_ultimos_5, gols_sofridos_ultimos_5) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)'
+cursor.execute(sql_desempenho,registro_desempenho)
+conexao.commit() """
+
+# ============================================================
+# 14. ENCERRAMENTO DA CONEXÃO
 # ============================================================
 
 cursor.close()
