@@ -197,3 +197,220 @@ def garantir_partida(cursor, df_partida):
             VALUES (%s,%s,%s,%s,%s,%s)""", (data, horario, id_adversario, id_competicao_temporada, id_estadio, rodada))
         id_partida = cursor.lastrowid
         return id_partida
+def validar_dataframe(df, colunas_esperadas, coluna_id=None):
+    """
+    Valida um DataFrame:
+    - Verifica se não está vazio.
+    - Verifica se possui as colunas esperadas.
+    - Verifica se a coluna de identificação não possui valores nulos.
+    - Verifica se existe apenas um identificador único.
+    """
+
+    # Verificar se está vazio
+    if df.empty:
+        raise ValueError("O DataFrame está vazio.")
+
+    # Verificar colunas esperadas
+    colunas_faltantes = set(colunas_esperadas) - set(df.columns)
+
+    if colunas_faltantes:
+        raise ValueError(f"Colunas ausentes: {colunas_faltantes}")
+
+    # Verificar identificador, quando informado
+    if coluna_id is not None:
+
+        if df[coluna_id].isna().any():
+            raise ValueError(f"Existem valores nulos em {coluna_id}.")
+
+        if df[coluna_id].nunique() != 1:
+            raise ValueError(f"Existem múltiplos valores em {coluna_id}.")
+
+    return True
+
+def inserir_ingressos(cursor, df_ingressos):
+
+    colunas_esperadas = [
+        'id_partida',
+        'descricao_original',
+        'id_setor',
+        'id_categoria',
+        'id_plano',
+        'preco',
+        'quantidade_disponivel',
+        'quantidade_devolvida',
+        'quantidade_utilizada',
+        'arrecadacao'
+    ]
+    
+    validar_dataframe(df=df_ingressos, colunas_esperadas=colunas_esperadas, coluna_id='id_partida')
+
+    id_partida = df_ingressos['id_partida'].iloc[0]
+
+    cursor.execute("SELECT 1 from ingresso_partida where id_partida = (%s) LIMIT 1",(id_partida,))
+
+    resultado = cursor.fetchone()
+
+    if resultado:
+        raise ValueError("Já existe ingressos carregados para essa partida")
+
+    sql = """ INSERT INTO ingresso_partida (
+            id_partida,
+            descricao_original,
+            id_setor,
+            id_categoria,
+            id_plano,
+            preco,
+            quantidade_disponivel,
+            quantidade_devolvida,
+            quantidade_utilizada,
+            arrecadacao
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+
+    registros = list(df_ingressos.itertuples(index=False, name=None))
+
+    cursor.executemany(sql, registros)
+
+    return cursor.rowcount
+
+
+def inserir_despesas(cursor, df_despesas):
+    
+    colunas_esperadas = [
+        'id_partida',
+        'nome',
+        'valor'
+    ]
+
+    validar_dataframe(df=df_despesas,colunas_esperadas=colunas_esperadas,coluna_id='id_partida')
+
+    id_partida = df_despesas['id_partida'].iloc[0]
+
+    cursor.execute('SELECT 1 FROM despesa_partida where id_partida = %s LIMIT 1', (id_partida,))
+
+    resultado = cursor.fetchone()
+
+    if resultado:
+        raise ValueError("Já existem despesas carregadas para essa partida")
+
+    sql = "INSERT INTO despesa_partida (id_partida, nome, valor) VALUES (%s, %s, %s)"
+
+    registros = list(df_despesas.itertuples(index=False, name=None))
+
+    cursor.executemany(sql, registros)
+
+    return cursor.rowcount
+
+
+def inserir_resumo(cursor, df_resumo):
+
+    colunas_esperadas = [
+        'id_partida',
+        'total_disponivel',
+        'total_devolvido',
+        'total_utilizado',
+        'arrecadacao_bruta',
+        'total_despesas',
+        'retencoes',
+        'receita_liquida',
+        'consignatarios',
+        'resultado_final',
+        'complemento_contabil'
+    ]
+
+    validar_dataframe(df=df_resumo,colunas_esperadas=colunas_esperadas,coluna_id='id_partida')
+
+    id_partida = df_resumo['id_partida'].iloc[0]
+
+    cursor.execute('SELECT 1 FROM resumo_financeiro_partida where id_partida = (%s)', (id_partida,))
+
+    resultado = cursor.fetchone()
+
+    if resultado:
+        raise ValueError("Já existe um resumo financeiro para essa partida")
+
+    registros = tuple(df_resumo.iloc[0].tolist())
+
+    cursor.execute('INSERT INTO resumo_financeiro_partida (id_partida, total_disponivel, total_devolvido, total_utilizado, arrecadacao_bruta, total_despesas, retencoes, receita_liquida, consignatarios, resultado_final, complemento_contabil) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', registros)
+
+    return cursor.rowcount
+
+def inserir_contexto(cursor, df_contexto):
+
+    colunas_esperadas = [
+        'id_partida',
+        'feriado',
+        'dias_desde_ultimo_jogo_maracana'
+    ]
+
+    validar_dataframe(df=df_contexto,colunas_esperadas=colunas_esperadas,coluna_id='id_partida')
+
+    id_partida = df_contexto['id_partida'].iloc[0]
+
+    cursor.execute('SELECT 1 FROM contexto_partida where id_partida = %s', (id_partida,))
+
+    resultado = cursor.fetchone()
+
+    if resultado:
+        raise ValueError("Já existe contexto para essa partida")
+
+    registros = tuple(df_contexto.iloc[0].tolist())
+
+    cursor.execute('INSERT INTO contexto_partida (id_partida, feriado, dias_desde_ultimo_jogo_maracana) VALUES (%s,%s,%s)', registros)
+
+    return cursor.rowcount
+
+def inserir_atributos(cursor, df_atributos):
+
+    colunas_esperadas = [
+            'id_partida',
+            'importancia_partida',
+            'apelo_adversario'
+        ]
+    
+    validar_dataframe(df=df_atributos,colunas_esperadas=colunas_esperadas,coluna_id='id_partida')
+
+    id_partida = df_atributos['id_partida'].iloc[0]
+
+    cursor.execute('SELECT 1 FROM atributos_partida where id_partida = %s', (id_partida,))
+
+    resultado = cursor.fetchone()
+
+    if resultado:
+        raise ValueError("Já existem atributos para essa partida")
+
+    registros = tuple(df_atributos.iloc[0].tolist())
+
+    cursor.execute('INSERT INTO atributos_partida (id_partida, importancia_partida, apelo_adversario) VALUES (%s,%s,%s)', registros)
+
+    return cursor.rowcount
+
+def inserir_desempenho(cursor, df_desempenho):
+
+    colunas_esperadas = [
+            'id_partida',
+            'posicao_fluminense',
+            'pontos_fluminense',
+            'vitorias_ultimos_5',
+            'empates_ultimos_5',
+            'derrotas_ultimos_5',
+            'gols_marcados_ultimos_5',
+            'gols_sofridos_ultimos_5'
+        ]
+    
+    validar_dataframe(df=df_desempenho,colunas_esperadas=colunas_esperadas,coluna_id='id_partida')
+
+    id_partida = df_desempenho['id_partida'].iloc[0]
+
+    cursor.execute('SELECT 1 FROM desempenho_partida where id_partida = %s', (id_partida,))
+
+    resultado = cursor.fetchone()
+
+    if resultado:
+        raise ValueError("Já existe desempenho para essa partida")
+
+    registros = tuple(df_desempenho.iloc[0].tolist())
+
+    cursor.execute('INSERT INTO desempenho_partida (id_partida,posicao_fluminense,pontos_fluminense,vitorias_ultimos_5,empates_ultimos_5,derrotas_ultimos_5,gols_marcados_ultimos_5,gols_sofridos_ultimos_5) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)', registros)
+
+    return cursor.rowcount
