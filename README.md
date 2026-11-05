@@ -4,7 +4,7 @@ Projeto de análise de dados voltado ao estudo da relação entre **preços de i
 
 O projeto busca construir uma base de dados estruturada a partir dos borderôs e integrá-la posteriormente a outras fontes de informação, permitindo análises exploratórias e estatísticas sobre a **demanda por ingressos, ocupação e desempenho financeiro das partidas**.
 
-> **Status:** Em desenvolvimento — transcrição e validação dos borderôs da temporada 2026; preparação da implementação do banco local
+> **Status:** O banco MySQL local e o pipeline ETL estão implementados. Os dados de 31 partidas disponíveis até o momento foram carregados; a conferência integral dos dados e as análises seguem em desenvolvimento.
 
 ### Resumo do projeto
 
@@ -12,11 +12,11 @@ O projeto busca construir uma base de dados estruturada a partir dos borderôs e
 | --- | --- |
 | **Pergunta** | Como preço, contexto da partida e perfil do jogo se relacionam com público, ocupação e receita de bilheteria do Fluminense? |
 | **Fonte** | Borderôs de jogos do Fluminense como mandante, divulgados publicamente pelo clube (PDFs) no [Portal da Transparência do Fluminense](https://transparenciafluminense.com.br/public/lista/124/arenas/operacao-de-jogos/borderos). Amostra inicial: temporada **2026**. |
-| **Já existe** | Modelagem relacional (DER), dicionário de dados, metodologia dos atributos, PDFs originais e planilhas Excel de transcrição da maior parte dos jogos de 2026. |
-| **Em andamento / pendente** | Conclusão do inventário e das validações, transcrição dos documentos ainda disponíveis, implementação do banco local MySQL, pipeline ETL, análises e dashboard. |
+| **Já existe** | Modelagem relacional (DER), dicionário de dados, metodologia dos atributos, banco MySQL local e pipeline ETL para as planilhas de borderô. Os dados de 31 partidas foram carregados. |
+| **Em andamento / pendente** | Revisão cruzada das transcrições, conferência sistemática das cargas, conclusão do inventário, integração de fontes complementares, análises e dashboard. |
 | **Tecnologias** | MySQL local, SQL, Python, Excel e Power BI. |
 
-A coleta e a transcrição da temporada 2026 estão em andamento; algumas partidas ainda não possuem borderô disponível. As análises e o dashboard ainda não foram produzidos.
+A coleta e a transcrição da temporada 2026 continuam em andamento; algumas partidas ainda não possuem borderô disponível. As análises e o dashboard ainda não foram produzidos.
 
 ---
 
@@ -81,9 +81,9 @@ Informações que não estejam disponíveis nos borderôs poderão ser obtidas e
 
 Os dados não serão armazenados diretamente no formato dos PDFs.
 
-A proposta é transformar as informações dos borderôs em uma estrutura relacional utilizando **MySQL em ambiente local**. O banco será acessado pelos scripts Python e pelo Power BI, sem necessidade de hospedagem na nuvem para o escopo atual. O modelo havia sido inicialmente criado no Supabase com PostgreSQL; a decisão atual é adaptar e implementar a estrutura no MySQL instalado localmente.
+A arquitetura atual transforma as informações transcritas dos borderôs em uma estrutura relacional utilizando **MySQL em ambiente local**. O banco é acessado pelos scripts Python e será utilizado pelo Power BI, sem necessidade de hospedagem na nuvem para o escopo atual. O modelo havia sido inicialmente criado no Supabase com PostgreSQL; o banco principal do projeto é atualmente MySQL.
 
-Fluxo planejado:
+Fluxo de dados do projeto:
 
 ```text
 Borderôs
@@ -105,7 +105,29 @@ Análises
 Power BI
 ```
 
-Os PDFs originais são preservados em `data/raw/`. As transcrições revisadas em Excel ficam em `data/interim/` e funcionam como etapa intermediária para validação e carga. Os dados estruturados serão armazenados no MySQL local. O Supabase/PostgreSQL foi utilizado na etapa inicial de modelagem/prototipagem, mas não será a plataforma principal do projeto.
+As etapas de leitura, preparação e carga no MySQL estão implementadas. Consultas complementares, análises e visualizações ainda estão previstas.
+
+Os PDFs originais são preservados em `data/raw/`. As transcrições revisadas em Excel ficam em `data/interim/` e funcionam como etapa intermediária para validação e carga. Os dados estruturados são armazenados no MySQL local. A pasta `data/processed/` está reservada; o ETL atual não grava cópias transformadas nela. O Supabase/PostgreSQL foi utilizado na etapa inicial de modelagem/prototipagem, mas não é a plataforma principal do projeto.
+
+### Execução do ETL
+
+Execute os comandos a partir da raiz do repositório, com o ambiente Python configurado e as variáveis `DB_HOST`, `DB_USER`, `DB_PASSWORD` e `DB_NAME` definidas no arquivo `.env`.
+
+Para carregar uma planilha específica:
+
+```powershell
+python -m scripts.main --arquivo "data\interim\NOME-DA-PLANILHA.xlsx"
+```
+
+Para processar todas as planilhas Excel em `data/interim/`:
+
+```powershell
+python -m scripts.main --lote
+```
+
+É obrigatório escolher um dos modos. Cada planilha é processada em uma transação própria: em caso de erro, suas alterações são revertidas; no modo de lote, o processamento segue para os arquivos seguintes e apresenta um resumo ao final.
+
+Antes de inserir, o ETL verifica as quantidades existentes nas tabelas de dados da partida. Se todas estiverem vazias, carrega os dados; se as quantidades coincidirem com as esperadas, ignora a planilha; nos demais casos, informa uma carga parcial. Essa verificação compara contagens, não o conteúdo dos registros.
 
 ---
 
@@ -446,20 +468,23 @@ A análise poderá considerar diferentes níveis de:
 
 ---
 
-## 🛠️ Tecnologias planejadas
+## 🛠️ Tecnologias utilizadas e previstas
 
-* **Python** — extração, tratamento e preparação dos dados
-* **MySQL** — armazenamento e gerenciamento local dos dados
-* **SQL** — consultas e transformação dos dados
-* **Power BI** — análise e visualização
+* **Python e pandas** — leitura, validação, transformação e preparação dos dados para carga
+* **openpyxl** — leitura das planilhas Excel
+* **MySQL e mysql-connector-python** — armazenamento local e acesso ao banco pelo ETL
+* **python-dotenv** — carregamento das credenciais de conexão a partir do `.env`
+* **SQL** — consultas e conferência dos dados
+* **Excel** — transcrição e revisão dos borderôs
 * **Git/GitHub** — versionamento e documentação
 * **dbdiagram.io** — modelagem e documentação do banco de dados
+* **Power BI** — ferramenta prevista para análise e visualização
 
 As ferramentas poderão ser ajustadas conforme o desenvolvimento do projeto.
 
 ---
 
-## 📁 Estrutura planejada do repositório
+## 📁 Estrutura do repositório
 
 ```text
 analise-bordero-fluminense/
@@ -476,17 +501,21 @@ analise-bordero-fluminense/
 │   └── DER - Fluminense_borderô.png  (existe)
 │
 ├── database/
-│   ├── schema_mysql_revisado.sql     (DDL MySQL — esquema revisado)
-│   └── seeds.sql                     (a implementar)
+│   ├── schema_mysql_analise_bordero_fluminense.sql
+│   ├── schema_mysql_revisado.sql
+│   └── README.md
 │
 ├── scripts/
-│   ├── extraction/
-│   └── transformation/
+│   ├── main.py                       (orquestração do ETL)
+│   └── etl/
+│       ├── leitura_excel.py          (localização, validação e leitura)
+│       ├── preparacao.py             (organização e preparação dos dados)
+│       └── banco_mysql.py            (conexão, referências e inserções)
 │
 ├── data/
 │   ├── raw/          (PDFs originais dos borderôs)
 │   ├── interim/      (planilhas Excel de transcrição por partida)
-│   └── processed/
+│   └── processed/    (reservada; o ETL ainda não gera arquivos aqui)
 │
 └── powerbi/
     └── ...
@@ -521,15 +550,18 @@ O diagrama da modelagem (DER) está em [`images/DER - Fluminense_borderô.png`](
 * [ ] Definição do G12 utilizado na análise
 * [x] Criação do dicionário de dados
 * [x] Definição do MySQL local como banco principal do projeto
-* [ ] Configuração do ambiente MySQL local
+* [x] Configuração do ambiente MySQL local e conexão Python com o banco
 * [x] Adaptação do DDL para MySQL e revisão de `INGRESSO_PARTIDA` para preservar descrições originais e aceitar setor/categoria não informados
 * [ ] Teste de instalação limpa e validação das restrições do DDL revisado
 * [x] Organização inicial dos PDFs originais (`data/raw/`) e das transcrições Excel (`data/interim/`)
 * [ ] Conclusão do inventário das partidas e dos borderôs disponíveis da temporada 2026
 * [ ] Revisão cruzada das transcrições com os PDFs originais
-* [ ] Desenvolvimento do ETL para carregar as planilhas no banco
+* [x] Implementação do ETL modularizado para ler, preparar e carregar as abas das planilhas no MySQL
+* [x] Implementação da execução de uma planilha isolada ou de um lote explícito
+* [x] Carga dos dados de 31 partidas disponíveis até o momento
+* [ ] Conferência sistemática das quantidades e dos totais oficiais de todas as 31 partidas
 * [ ] Integração com fontes complementares
-* [ ] Tratamento e transformação dos dados
+* [x] Implementação do tratamento e da transformação dos dados necessários à carga ETL
 * [ ] Análise exploratória
 * [ ] Modelagem estatística
 * [ ] Desenvolvimento do modelo no Power BI
@@ -571,10 +603,8 @@ O objetivo é que o projeto não seja apenas um dashboard final, mas um exemplo 
 
 ## ⚠️ Status dos resultados
 
-Este projeto encontra-se em fase de desenvolvimento.
+Este projeto encontra-se em fase de desenvolvimento. O modelo conceitual e lógico está documentado no DER, no documento de modelagem e no dicionário de dados. Os PDFs originais são preservados em `data/raw/`, e as planilhas transcritas e revisadas ficam em `data/interim/`. O pipeline ETL carrega os dados no MySQL local; os dados de 31 partidas disponíveis até o momento já foram inseridos. Algumas partidas permanecem pendentes porque seus borderôs ainda não foram disponibilizados.
 
-O modelo conceitual e lógico está documentado no DER, no documento de modelagem e no dicionário de dados. A maior parte dos borderôs disponíveis da temporada 2026 já foi transcrita em planilhas Excel individuais, armazenadas em `data/interim/`, enquanto os PDFs originais são preservados em `data/raw/`. Algumas partidas permanecem pendentes porque seus borderôs ainda não foram disponibilizados. A próxima fase é concluir o inventário e a revisão cruzada das transcrições, adaptar o modelo para MySQL e implementar o banco local antes de desenvolver a carga ETL.
-
-Os critérios e exemplos de pontuação para `importancia_partida` e `apelo_adversario` estão documentados em [Metodologia dos atributos da partida](docs/07_metodologia_atributos_partida.md). O período da amostra ainda precisa ser definido antes das análises completas. As análises, conclusões e visualizações ainda não foram finalizadas.
+Os critérios e exemplos de pontuação para `importancia_partida` e `apelo_adversario` estão documentados em [Metodologia dos atributos da partida](docs/07_metodologia_atributos_partida.md). A conferência sistemática dos dados carregados, a conclusão do inventário e a revisão das transcrições permanecem pendentes. O período da amostra ainda precisa ser definido antes das análises completas. As análises, conclusões e visualizações ainda não foram finalizadas.
 
 Resultados apresentados futuramente serão baseados nos dados coletados e na metodologia documentada neste repositório.

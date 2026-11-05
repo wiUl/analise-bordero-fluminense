@@ -1,17 +1,5 @@
 import mysql.connector
 
-from dotenv import load_dotenv
-import os
-
-# Carrega as variáveis de ambiente do arquivo .env
-load_dotenv()
-
-seu_host = os.getenv("DB_HOST")
-seu_user = os.getenv("DB_USER")
-seu_password = os.getenv("DB_PASSWORD")
-seu_database = os.getenv("DB_NAME")
-
-
 def conectar_banco(host, user, password, database):
     conexao = mysql.connector.connect(
         host=host,
@@ -35,12 +23,9 @@ def garantir_referencias_ingressos(cursor, df_ingressos):
     mapas = []
 
     for coluna_planilha, coluna_id, tabela in configuracoes:
-        # Carrega as referências já cadastradas para evitar inserir nomes repetidos.
-        cursor.execute(f"SELECT {coluna_id}, nome FROM {tabela}")
-        mapa = {
-            nome: identificador
-            for identificador, nome in cursor.fetchall()
-        }
+        # O MySQL pode considerar equivalentes nomes que o Python diferencia,
+        # como "Socio" e "Sócio". A consulta abaixo usa a collation da tabela.
+        mapa = {}
 
         # Ignora valores ausentes: eles não representam um nome a cadastrar.
         nomes_planilha = df_ingressos[coluna_planilha].dropna().unique()
@@ -52,8 +37,20 @@ def garantir_referencias_ingressos(cursor, df_ingressos):
                     f"Valor vazio encontrado na coluna {coluna_planilha}."
                 )
 
-            # Cadastra apenas nomes novos e guarda o ID gerado para o mapeamento dos ingressos.
-            if nome not in mapa:
+            # Busca usando a comparação do MySQL, que respeita a collation
+            # definida no banco (incluindo equivalências de acento e caixa).
+            cursor.execute(
+                f"SELECT {coluna_id} FROM {tabela} WHERE nome = %s LIMIT 1",
+                (nome,)
+            )
+            resultado = cursor.fetchone()
+
+            if resultado is not None:
+                # Usa o texto exato da planilha como chave para que o
+                # preparar_ingressos encontre o ID sem alterar a descrição.
+                mapa[nome] = resultado[0]
+            else:
+                # Só cadastra o nome quando o MySQL não encontra equivalente.
                 cursor.execute(
                     f"INSERT INTO {tabela} (nome) VALUES (%s)",
                     (nome,)
@@ -197,6 +194,44 @@ def garantir_partida(cursor, df_partida):
             VALUES (%s,%s,%s,%s,%s,%s)""", (data, horario, id_adversario, id_competicao_temporada, id_estadio, rodada))
         id_partida = cursor.lastrowid
         return id_partida
+
+
+def verificar_estado_carga_partida(cursor, id_partida, quantidades_esperadas):
+    """Classifica a carga das tabelas de dados associadas a uma partida.
+
+    Retorna ``completa`` quando as quantidades existentes coincidem com as
+    esperadas, ``vazia`` quando ainda não há registros e ``parcial`` nos
+    demais casos. Os nomes das tabelas são fixos no código; os valores
+    esperados vêm dos DataFrames já preparados.
+    """
+    tabelas = [
+        'ingresso_partida',
+        'despesa_partida',
+        'resumo_financeiro_partida',
+        'contexto_partida',
+        'atributos_partida',
+        'desempenho_partida'
+    ]
+
+    # Conta os registros já gravados em cada tabela-fato para esta partida.
+    quantidades_existentes = {}
+    for tabela in tabelas:
+        cursor.execute(
+            f"SELECT COUNT(*) FROM {tabela} WHERE id_partida = %s",
+            (id_partida,)
+        )
+        quantidades_existentes[tabela] = cursor.fetchone()[0]
+
+    # Uma carga completamente nova pode prosseguir; uma carga completa pode
+    # ser ignorada; qualquer combinação diferente requer conferência manual.
+    if all(quantidade == 0 for quantidade in quantidades_existentes.values()):
+        estado = 'vazia'
+    elif quantidades_existentes == quantidades_esperadas:
+        estado = 'completa'
+    else:
+        estado = 'parcial'
+
+    return estado, quantidades_existentes
 def validar_dataframe(df, colunas_esperadas, coluna_id=None):
     """
     Valida um DataFrame:
@@ -244,7 +279,7 @@ def inserir_ingressos(cursor, df_ingressos):
     
     validar_dataframe(df=df_ingressos, colunas_esperadas=colunas_esperadas, coluna_id='id_partida')
 
-    id_partida = df_ingressos['id_partida'].iloc[0]
+    id_partida = int(df_ingressos['id_partida'].iloc[0])
 
     cursor.execute("SELECT 1 from ingresso_partida where id_partida = (%s) LIMIT 1",(id_partida,))
 
@@ -284,7 +319,7 @@ def inserir_despesas(cursor, df_despesas):
 
     validar_dataframe(df=df_despesas,colunas_esperadas=colunas_esperadas,coluna_id='id_partida')
 
-    id_partida = df_despesas['id_partida'].iloc[0]
+    id_partida = int(df_despesas['id_partida'].iloc[0])
 
     cursor.execute('SELECT 1 FROM despesa_partida where id_partida = %s LIMIT 1', (id_partida,))
 
@@ -320,7 +355,7 @@ def inserir_resumo(cursor, df_resumo):
 
     validar_dataframe(df=df_resumo,colunas_esperadas=colunas_esperadas,coluna_id='id_partida')
 
-    id_partida = df_resumo['id_partida'].iloc[0]
+    id_partida = int(df_resumo['id_partida'].iloc[0])
 
     cursor.execute('SELECT 1 FROM resumo_financeiro_partida where id_partida = (%s)', (id_partida,))
 
@@ -345,7 +380,7 @@ def inserir_contexto(cursor, df_contexto):
 
     validar_dataframe(df=df_contexto,colunas_esperadas=colunas_esperadas,coluna_id='id_partida')
 
-    id_partida = df_contexto['id_partida'].iloc[0]
+    id_partida = int(df_contexto['id_partida'].iloc[0])
 
     cursor.execute('SELECT 1 FROM contexto_partida where id_partida = %s', (id_partida,))
 
@@ -370,7 +405,7 @@ def inserir_atributos(cursor, df_atributos):
     
     validar_dataframe(df=df_atributos,colunas_esperadas=colunas_esperadas,coluna_id='id_partida')
 
-    id_partida = df_atributos['id_partida'].iloc[0]
+    id_partida = int(df_atributos['id_partida'].iloc[0])
 
     cursor.execute('SELECT 1 FROM atributos_partida where id_partida = %s', (id_partida,))
 
@@ -400,7 +435,7 @@ def inserir_desempenho(cursor, df_desempenho):
     
     validar_dataframe(df=df_desempenho,colunas_esperadas=colunas_esperadas,coluna_id='id_partida')
 
-    id_partida = df_desempenho['id_partida'].iloc[0]
+    id_partida = int(df_desempenho['id_partida'].iloc[0])
 
     cursor.execute('SELECT 1 FROM desempenho_partida where id_partida = %s', (id_partida,))
 
