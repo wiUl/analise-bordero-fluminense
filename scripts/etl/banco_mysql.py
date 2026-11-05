@@ -1,4 +1,35 @@
 import mysql.connector
+from datetime import time, timedelta
+
+
+def normalizar_horario(valor):
+    """Converte horários de Excel, pandas e MySQL para HH:MM:SS."""
+    if valor is None:
+        return None
+
+    # TIME do MySQL pode vir como datetime.time; Excel/pandas pode produzir
+    # Timedelta ou Timestamp, dependendo do formato da célula.
+    if isinstance(valor, time):
+        return valor.replace(microsecond=0).isoformat()
+    if isinstance(valor, timedelta):
+        segundos = int(valor.total_seconds()) % (24 * 60 * 60)
+        horas, resto = divmod(segundos, 3600)
+        minutos, segundos = divmod(resto, 60)
+        return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+    if hasattr(valor, "to_pydatetime"):
+        valor = valor.to_pydatetime()
+    if hasattr(valor, "time") and not isinstance(valor, str):
+        hora = valor.time()
+        return hora.replace(microsecond=0).isoformat()
+    if isinstance(valor, str):
+        texto = valor.strip()
+        if not texto:
+            return None
+        try:
+            return time.fromisoformat(texto).replace(microsecond=0).isoformat()
+        except ValueError:
+            raise ValueError(f"Formato de horário inválido: {valor!r}") from None
+    raise ValueError(f"Tipo de horário não suportado: {type(valor).__name__} ({valor!r})")
 
 def conectar_banco(host, user, password, database):
     conexao = mysql.connector.connect(
@@ -180,7 +211,7 @@ def garantir_partida(cursor, df_partida):
             raise ValueError("Existem duplicatas para a chave natural")
 
         id_partida, horario_partida, estadio_partida, rodada_partida = resultado[0]
-        if horario != horario_partida:
+        if normalizar_horario(horario) != normalizar_horario(horario_partida):
             raise ValueError(f"Existe uma divergência no atributo horario: Banco de Dados - {horario_partida} / Planilha - {horario}")
         if id_estadio != estadio_partida:
             raise ValueError(f"Existe uma divergência no atributo estadio_id: Banco de Dados - {estadio_partida} / Planilha - {id_estadio}")
