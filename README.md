@@ -129,6 +129,8 @@ python -m scripts.main --lote
 
 Antes de inserir, o ETL verifica as quantidades existentes nas tabelas de dados da partida. Se todas estiverem vazias, carrega os dados; se as quantidades coincidirem com as esperadas, ignora a planilha; nos demais casos, informa uma carga parcial. Essa verificação compara contagens, não o conteúdo dos registros.
 
+Antes de consultar ou cadastrar setores, categorias e planos de sócio, o ETL remove espaços no início e no fim e reduz sequências de espaços a um único espaço. Assim, valores como `Sul`, ` Sul ` e `Sul  ` usam a mesma chave; o espaço simples entre palavras, como em `Leste Inferior`, é mantido. O texto de `descricao_original` continua literal. O ETL também verifica os cadastros existentes e interrompe a carga se encontrar IDs diferentes cujos nomes colidam após essa normalização, para que a duplicidade seja corrigida explicitamente no banco.
+
 ---
 
 ## 🧩 Modelagem dos dados

@@ -1,5 +1,6 @@
 import mysql.connector
 from datetime import time, timedelta
+from scripts.etl.normalizacao import normalizar_espacos
 
 
 def normalizar_horario(valor):
@@ -41,6 +42,39 @@ def conectar_banco(host, user, password, database):
 
     return conexao
 
+
+def buscar_id_referencia(cursor, tabela, coluna_id, nome):
+    """Busca uma referência após normalizar espaços e acusa IDs que colidiriam."""
+    nome = normalizar_espacos(nome)
+    if nome is None:
+        raise ValueError(f"O nome da referência em {tabela} não pode ser vazio.")
+
+    cursor.execute(f"SELECT {coluna_id}, nome FROM {tabela}")
+    registros = cursor.fetchall()
+    ids_correspondentes = {
+        id_registro
+        for id_registro, nome_registro in registros
+        if normalizar_espacos(nome_registro) == nome
+    }
+
+    if len(ids_correspondentes) > 1:
+        raise ValueError(
+            f"A tabela {tabela} possui IDs diferentes para o nome "
+            f"normalizado {nome!r}: {sorted(ids_correspondentes)}. "
+            "Corrija o cadastro antes de carregar novos dados."
+        )
+    if ids_correspondentes:
+        return next(iter(ids_correspondentes))
+
+    # Mantém o comportamento da collation MySQL para equivalências de caixa/acento.
+    cursor.execute(
+        f"SELECT {coluna_id} FROM {tabela} WHERE nome = %s LIMIT 1",
+        (nome,)
+    )
+    resultado = cursor.fetchone()
+    return resultado[0] if resultado is not None else None
+
+
 def garantir_referencias_ingressos(cursor, df_ingressos):
     """Retorna mapas nome->ID e cadastra nomes ainda ausentes no banco."""
     # Relaciona cada coluna da planilha à tabela e à chave primária correspondentes.
@@ -54,19 +88,41 @@ def garantir_referencias_ingressos(cursor, df_ingressos):
     mapas = []
 
     for coluna_planilha, coluna_id, tabela in configuracoes:
-        # O MySQL pode considerar equivalentes nomes que o Python diferencia,
-        # como "Socio" e "Sócio". A consulta abaixo usa a collation da tabela.
+        # Normaliza antes de deduplicar para que "Sul" e " Sul  " usem a mesma chave.
+        valores = df_ingressos[coluna_planilha].map(normalizar_espacos).dropna()
+        nomes_planilha = valores.drop_duplicates().tolist()
+
+        if any(not isinstance(nome, str) for nome in nomes_planilha):
+            raise ValueError(
+                f"A coluna {coluna_planilha} deve conter apenas nomes textuais."
+            )
+
         mapa = {}
 
-        # Ignora valores ausentes: eles não representam um nome a cadastrar.
-        nomes_planilha = df_ingressos[coluna_planilha].dropna().unique()
+        # Confere referências já existentes e bloqueia IDs distintos que colidiriam
+        # após a normalização de espaços.
+        cursor.execute(f"SELECT {coluna_id}, nome FROM {tabela}")
+        for id_existente, nome_existente in cursor.fetchall():
+            chave = normalizar_espacos(nome_existente)
+            if chave is None:
+                raise ValueError(
+                    f"A tabela {tabela} contém um nome vazio (ID {id_existente})."
+                )
+            if chave in mapa and mapa[chave] != id_existente:
+                raise ValueError(
+                    f"A tabela {tabela} possui IDs diferentes para o nome "
+                    f"normalizado {chave!r}: {mapa[chave]} e {id_existente}. "
+                    "Corrija o cadastro antes de carregar novos dados."
+                )
+            mapa[chave] = id_existente
 
         for nome in nomes_planilha:
-            # Rejeita texto composto apenas por espaços, que não identifica uma referência.
-            if isinstance(nome, str) and not nome.strip():
-                raise ValueError(
-                    f"Valor vazio encontrado na coluna {coluna_planilha}."
-                )
+            nome = normalizar_espacos(nome)
+            if nome is None:
+                continue
+
+            if nome in mapa:
+                continue
 
             # Busca usando a comparação do MySQL, que respeita a collation
             # definida no banco (incluindo equivalências de acento e caixa).
@@ -77,8 +133,6 @@ def garantir_referencias_ingressos(cursor, df_ingressos):
             resultado = cursor.fetchone()
 
             if resultado is not None:
-                # Usa o texto exato da planilha como chave para que o
-                # preparar_ingressos encontre o ID sem alterar a descrição.
                 mapa[nome] = resultado[0]
             else:
                 # Só cadastra o nome quando o MySQL não encontra equivalente.
@@ -97,16 +151,18 @@ def garantir_referencias_ingressos(cursor, df_ingressos):
 
 def garantir_competicao(cursor, nome_competicao):
 
-    cursor.execute("SELECT id_competicao FROM competicao where nome = %s", (nome_competicao,))
+    nome_competicao = normalizar_espacos(nome_competicao)
+    if nome_competicao is None:
+        raise ValueError("Nome da competição não pode ser nulo ou vazio.")
 
-    resultado = cursor.fetchone()
-
-    if resultado is not None:
-        return resultado[0]
-    else:
-        cursor.execute("INSERT INTO competicao (nome) VALUES (%s)", (nome_competicao,))
-        id_competicao = cursor.lastrowid
+    id_competicao = buscar_id_referencia(
+        cursor, 'competicao', 'id_competicao', nome_competicao
+    )
+    if id_competicao is not None:
         return id_competicao
+
+    cursor.execute("INSERT INTO competicao (nome) VALUES (%s)", (nome_competicao,))
+    return cursor.lastrowid
 
 
 def garantir_temporada(cursor, ano_temporada):
@@ -124,37 +180,58 @@ def garantir_temporada(cursor, ano_temporada):
 
 def garantir_adversario(cursor, nome_adversario, e_classico, e_clube_g12):
 
-    cursor.execute("SELECT id_adversario, e_classico, e_clube_g12 FROM adversario where nome = %s", (nome_adversario,))
+    nome_adversario = normalizar_espacos(nome_adversario)
+    if nome_adversario is None:
+        raise ValueError("Nome do adversário não pode ser nulo ou vazio.")
 
-    resultado = cursor.fetchone()
+    id_adversario = buscar_id_referencia(
+        cursor, 'adversario', 'id_adversario', nome_adversario
+    )
 
-    if resultado is not None:
-        id_adversario = resultado[0]
-        e_classico_adversario = resultado[1]
-        e_clube_g12_adversario = resultado[2]
+    if id_adversario is not None:
+        cursor.execute(
+            "SELECT e_classico, e_clube_g12 FROM adversario WHERE id_adversario = %s",
+            (id_adversario,)
+        )
+        resultado = cursor.fetchone()
+        e_classico_adversario = resultado[0]
+        e_clube_g12_adversario = resultado[1]
         if e_classico != e_classico_adversario:
             raise ValueError(f"Existe uma divergência no atributo e_classico: Banco de Dados - {e_classico_adversario} / Planilha - {e_classico}")
         if e_clube_g12 != e_clube_g12_adversario:
             raise ValueError(f"Existe uma divergência no atributo e_clube_g12: Banco de Dados - {e_clube_g12_adversario} / Planilha - {e_clube_g12}")
         return id_adversario
-    else:
-        cursor.execute('INSERT INTO adversario (nome, e_classico, e_clube_g12) VALUES (%s,%s,%s)', (nome_adversario, e_classico, e_clube_g12))
-        id_adversario = cursor.lastrowid
-        return id_adversario
+
+    cursor.execute(
+        'INSERT INTO adversario (nome, e_classico, e_clube_g12) VALUES (%s,%s,%s)',
+        (nome_adversario, e_classico, e_clube_g12)
+    )
+    return cursor.lastrowid
 
 def garantir_estadio(cursor, nome_estadio, cidade, estado, pais, capacidade):
 
-    cursor.execute("SELECT id_estadio, nome, cidade, estado, pais, capacidade FROM estadio where nome = %s", (nome_estadio,))
+    nome_estadio = normalizar_espacos(nome_estadio)
+    cidade = normalizar_espacos(cidade)
+    estado = normalizar_espacos(estado)
+    pais = normalizar_espacos(pais)
+    if nome_estadio is None:
+        raise ValueError("Nome do estádio não pode ser nulo ou vazio.")
 
-    resultado = cursor.fetchone()
+    id_estadio = buscar_id_referencia(
+        cursor, 'estadio', 'id_estadio', nome_estadio
+    )
 
-    if resultado is not None:
-
-        id_estadio = resultado[0]
-        cidade_estadio = resultado[2]
-        estado_estadio = resultado[3]
-        pais_estadio = resultado[4]
-        capacidade_estadio = resultado[5]
+    if id_estadio is not None:
+        cursor.execute(
+            "SELECT nome, cidade, estado, pais, capacidade "
+            "FROM estadio WHERE id_estadio = %s",
+            (id_estadio,)
+        )
+        resultado = cursor.fetchone()
+        cidade_estadio = normalizar_espacos(resultado[1])
+        estado_estadio = normalizar_espacos(resultado[2])
+        pais_estadio = normalizar_espacos(resultado[3])
+        capacidade_estadio = resultado[4]
 
         if cidade != cidade_estadio:
             raise ValueError(f"Existe uma divergência no atributo cidade: Banco de Dados - {cidade_estadio} / Planilha - {cidade}")
@@ -167,10 +244,13 @@ def garantir_estadio(cursor, nome_estadio, cidade, estado, pais, capacidade):
         
         
         return id_estadio
-    else:
-        cursor.execute("INSERT INTO estadio (nome, cidade, estado, pais, capacidade) VALUES (%s,%s,%s,%s,%s)", (nome_estadio, cidade, estado, pais, capacidade))
-        id_estadio = cursor.lastrowid
-        return id_estadio
+
+    cursor.execute(
+        "INSERT INTO estadio (nome, cidade, estado, pais, capacidade) "
+        "VALUES (%s,%s,%s,%s,%s)",
+        (nome_estadio, cidade, estado, pais, capacidade)
+    )
+    return cursor.lastrowid
 
 def garantir_competicao_temporada(cursor, id_competicao, id_temporada):
 

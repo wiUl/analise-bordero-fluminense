@@ -1,4 +1,5 @@
 import pandas as pd
+from scripts.etl.normalizacao import normalizar_espacos, normalizar_colunas_textuais
 
 
 def organizar_entidades(df):
@@ -76,7 +77,7 @@ def preparar_referencias_partida(dados_partida):
     temporada = dados_partida['temporada']
 
     # COMPETICAO e TEMPORADA possuem campos obrigatórios no modelo.
-    nome_competicao = competicao['nome']
+    nome_competicao = normalizar_espacos(competicao['nome'])
     ano_temporada = temporada['ano']
 
     if pd.isna(nome_competicao) or not isinstance(nome_competicao, str) or not nome_competicao.strip():
@@ -94,7 +95,7 @@ def preparar_referencias_partida(dados_partida):
     df_temporada = pd.DataFrame([{'ano': int(ano_numerico)}])
 
     # ADVERSARIO exige nome e flags booleanas; não aceita ausência para esses campos.
-    nome_adversario = adversario['nome']
+    nome_adversario = normalizar_espacos(adversario['nome'])
     e_classico_adversario = adversario['e_classico']
     e_clube_g12 = adversario['e_clube_g12']
 
@@ -124,7 +125,7 @@ def preparar_referencias_partida(dados_partida):
     }])
 
     # ESTADIO exige nome; localização e capacidade podem ser NULL conforme o modelo.
-    nome_estadio = estadio['nome']
+    nome_estadio = normalizar_espacos(estadio['nome'])
     capacidade_estadio = estadio['capacidade']
 
     if pd.isna(nome_estadio) or not isinstance(nome_estadio, str) or not nome_estadio.strip():
@@ -144,9 +145,9 @@ def preparar_referencias_partida(dados_partida):
 
     df_estadio = pd.DataFrame([{
         'nome': nome_estadio,
-        'cidade': estadio['cidade'],
-        'estado': estadio['estado'],
-        'pais': estadio['pais'],
+        'cidade': normalizar_espacos(estadio['cidade']),
+        'estado': normalizar_espacos(estadio['estado']),
+        'pais': normalizar_espacos(estadio['pais']),
         'capacidade': capacidade_estadio
     }])
 
@@ -196,7 +197,7 @@ def preparar_partida(dados_partida, id_adversario, id_competicao_temporada, id_e
         'adversario_id': ids_obrigatorios['id_adversario'],
         'competicao_temporada_id': ids_obrigatorios['id_competicao_temporada'],
         'estadio_id': ids_obrigatorios['id_estadio'],
-        'rodada': partida['rodada']
+        'rodada': normalizar_espacos(partida['rodada'])
     }])
 
     return df_partida.astype(object).where(pd.notna(df_partida), None)
@@ -249,6 +250,10 @@ def preparar_ingressos(df_ingressos,id_partida,setores_dict,categorias_dict,plan
     ]
 
     df_ingressos_carga = df_ingressos[colunas_origem].copy()
+    df_ingressos_carga = normalizar_colunas_textuais(
+        df_ingressos_carga,
+        ['setor', 'categoria_ingresso', 'plano_socio']
+    )
 
     if df_ingressos_carga['descricao_original'].isna().any():
         raise ValueError('A descrição original do ingresso não pode ser nula')
