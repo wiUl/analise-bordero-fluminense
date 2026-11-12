@@ -4,7 +4,7 @@ Projeto de análise de dados voltado ao estudo da relação entre **preços de i
 
 O projeto busca construir uma base de dados estruturada a partir dos borderôs e integrá-la posteriormente a outras fontes de informação, permitindo análises exploratórias e estatísticas sobre a **demanda por ingressos, ocupação e desempenho financeiro das partidas**.
 
-> **Status:** O banco MySQL local e o pipeline ETL estão implementados. Os dados de 31 partidas disponíveis até o momento foram carregados; a conferência integral dos dados e as análises seguem em desenvolvimento.
+> **Status:** O banco MySQL local, o pipeline ETL e o modelo dimensional no Power BI estão implementados. Os dados de 31 partidas da temporada 2026 foram carregados e a primeira página do dashboard (Resumo Temporada 2026) foi construída. A revisão cruzada das transcrições e as análises aprofundadas seguem em desenvolvimento.
 
 ### Resumo do projeto
 
@@ -12,11 +12,11 @@ O projeto busca construir uma base de dados estruturada a partir dos borderôs e
 | --- | --- |
 | **Pergunta** | Como preço, contexto da partida e perfil do jogo se relacionam com público, ocupação e receita de bilheteria do Fluminense? |
 | **Fonte** | Borderôs de jogos do Fluminense como mandante, divulgados publicamente pelo clube (PDFs) no [Portal da Transparência do Fluminense](https://transparenciafluminense.com.br/public/lista/124/arenas/operacao-de-jogos/borderos). Amostra inicial: temporada **2026**. |
-| **Já existe** | Modelagem relacional (DER), dicionário de dados, metodologia dos atributos, banco MySQL local e pipeline ETL para as planilhas de borderô. Os dados de 31 partidas foram carregados. |
-| **Em andamento / pendente** | Revisão cruzada das transcrições, conferência sistemática das cargas, conclusão do inventário, integração de fontes complementares, análises e dashboard. |
+| **Já existe** | Modelagem relacional (DER), dicionário de dados, metodologia dos atributos, banco MySQL local e pipeline ETL para as planilhas de borderô. Os dados de 31 partidas foram carregados. Modelo dimensional no Power BI (`dim_partida`, `dim_ingresso`, `dim_data`, `fato_ingresso`, `fato_despesa`) e a página-resumo do dashboard. |
+| **Em andamento / pendente** | Revisão cruzada das transcrições, conclusão do inventário, integração de fontes complementares, demais páginas do dashboard e análises de demanda, receita e contexto. |
 | **Tecnologias** | MySQL local, SQL, Python, Excel e Power BI. |
 
-A coleta e a transcrição da temporada 2026 continuam em andamento; algumas partidas ainda não possuem borderô disponível. As análises e o dashboard ainda não foram produzidos.
+A coleta e a transcrição da temporada 2026 continuam em andamento; algumas partidas ainda não possuem borderô disponível. Existe uma primeira página de dashboard (resumo da temporada 2026); as análises de preço × demanda e de contexto ainda não foram produzidas.
 
 ---
 
@@ -81,7 +81,7 @@ Informações que não estejam disponíveis nos borderôs poderão ser obtidas e
 
 Os dados não serão armazenados diretamente no formato dos PDFs.
 
-A arquitetura atual transforma as informações transcritas dos borderôs em uma estrutura relacional utilizando **MySQL em ambiente local**. O banco é acessado pelos scripts Python e será utilizado pelo Power BI, sem necessidade de hospedagem na nuvem para o escopo atual. O modelo havia sido inicialmente criado no Supabase com PostgreSQL; o banco principal do projeto é atualmente MySQL.
+A arquitetura atual transforma as informações transcritas dos borderôs em uma estrutura relacional utilizando **MySQL em ambiente local**. O banco é acessado pelos scripts Python e pelo Power BI, sem necessidade de hospedagem na nuvem para o escopo atual. O modelo havia sido inicialmente criado no Supabase com PostgreSQL; o banco principal do projeto é atualmente MySQL.
 
 Fluxo de dados do projeto:
 
@@ -98,6 +98,8 @@ ETL e validações com Python
    ↓
 MySQL local
    ↓
+Modelo dimensional no Power BI (Power Query + DAX)
+   ↓
 Consultas SQL e integração com fontes complementares
    ↓
 Análises
@@ -105,7 +107,7 @@ Análises
 Power BI
 ```
 
-As etapas de leitura, preparação e carga no MySQL estão implementadas. Consultas complementares, análises e visualizações ainda estão previstas.
+As etapas de leitura, preparação, carga no MySQL e modelagem no Power BI estão implementadas. Análises complementares e as demais páginas do dashboard ainda estão previstas.
 
 Os PDFs originais são preservados em `data/raw/`. As transcrições revisadas em Excel ficam em `data/interim/` e funcionam como etapa intermediária para validação e carga. Os dados estruturados são armazenados no MySQL local. A pasta `data/processed/` está reservada; o ETL atual não grava cópias transformadas nela. O Supabase/PostgreSQL foi utilizado na etapa inicial de modelagem/prototipagem, mas não é a plataforma principal do projeto.
 
@@ -228,6 +230,38 @@ Caso análises futuras exijam agrupamentos das despesas, classificações poder�
 
 ---
 
+## 📐 Modelo analítico no Power BI
+
+O Power BI consome o MySQL e reorganiza o modelo relacional em um modelo dimensional:
+
+| Tabela | Papel |
+| --- | --- |
+| `dim_partida` | Partida com adversário, competição, temporada, estádio, contexto, atributos e desempenho |
+| `dim_ingresso` | Tipo de ingresso (setor, categoria e plano de sócio) |
+| `dim_data` | Tabela de datas |
+| `fato_ingresso` | Ingressos por partida e tipo de ingresso |
+| `fato_despesa` | Despesas por partida |
+| `_Medidas` | Medidas DAX |
+
+Definições usadas nos indicadores:
+
+* **Público presente:** soma da quantidade utilizada;
+* **Público pagante:** ingressos com preço informado (linhas sem preço são gratuidades);
+* **Ticket médio:** arrecadação ÷ público pagante;
+* **Receita líquida:** arrecadação − despesas.
+
+> A documentação completa das decisões de modelagem e das medidas será criada em `docs/`.
+
+---
+
+## 📊 Dashboard
+
+Primeira página: **Resumo Temporada 2026** (31 jogos como mandante).
+
+![Dashboard – Resumo Temporada 2026](images/dashboard_resumo_temporada_2026.jpg)
+
+---
+
 ## 🌐 Contexto da partida
 
 O contexto representa condições circunstanciais da realização da partida.
@@ -339,13 +373,15 @@ Quando possível, registrar uma justificativa curta para cada nota na planilha d
 - `justificativa_importancia`: "Final única da Libertadores, valendo o título continental."
 - `justificativa_apelo`: "Boca Juniors: enorme tradição e reconhecimento continental."
 
-As justificativas podem permanecer na planilha e na documentação metodológica; não é obrigatório criar novas colunas no PostgreSQL nesta etapa.
+As justificativas podem permanecer na planilha e na documentação metodológica; não é obrigatório criar novas colunas no banco nesta etapa.
 
 A pontuação deve ser definida com base em informações disponíveis antes do início da partida. Notas extremas (0, 1, 9 e 10) devem ter justificativa clara. Mudanças futuras nos critérios devem ser documentadas e versionadas; notas históricas não devem ser alteradas retroativamente sem uma regra explícita.
 
 ### Indicadores do adversário
 
-Os campos `e_classico` e `e_clube_g12` pertencem à entidade `ADVERSARIO`, conforme o DER. O critério exato para considerar um adversário clássico e a composição do G12 devem ser documentados e aplicados de forma consistente.
+Os campos `e_classico` e `e_clube_g12` pertencem à entidade `ADVERSARIO`, conforme o DER. O critério exato para considerar um adversário clássico deve ser documentado e aplicado de forma consistente.
+
+**Definição de G12 no projeto:** o indicador `e_clube_g12` marca os **clubes grandes do Brasil** e, fora do país, os **clubes tradicionais sul-americanos**. Portanto, o nome "G12" é um rótulo do projeto e não se restringe aos 12 grandes brasileiros. No dashboard, o indicador aparece como "Clubes Grandes". Nas 31 partidas de 2026, estão marcados: Atlético Mineiro, Botafogo, Corinthians, Flamengo, Grêmio, Internacional, Palmeiras, Santos, São Paulo e Vasco (Brasil) e Bolívar (América do Sul).
 
 Valor de ambos os indicadores:
 
@@ -389,7 +425,7 @@ de:
 
 ## 👥 Sócio-torcedor
 
-O Portal da Transparência disponibiliza uma série histórica mensal de sócios adimplentes e inadimplentes. Neste momento, essa série será tratada como **fonte externa para o Power BI**, sem uma tabela obrigatória no PostgreSQL.
+O Portal da Transparência disponibiliza uma série histórica mensal de sócios adimplentes e inadimplentes. Neste momento, essa série será tratada como **fonte externa para o Power BI**, sem uma tabela obrigatória no banco.
 
 A decisão poderá ser revista posteriormente caso a integração ao banco traga benefício analítico.
 
@@ -480,7 +516,7 @@ A análise poderá considerar diferentes níveis de:
 * **Excel** — transcrição e revisão dos borderôs
 * **Git/GitHub** — versionamento e documentação
 * **dbdiagram.io** — modelagem e documentação do banco de dados
-* **Power BI** — ferramenta prevista para análise e visualização
+* **Power BI** — modelagem dimensional, medidas DAX e dashboards
 
 As ferramentas poderão ser ajustadas conforme o desenvolvimento do projeto.
 
@@ -492,6 +528,9 @@ As ferramentas poderão ser ajustadas conforme o desenvolvimento do projeto.
 analise-bordero-fluminense/
 │
 ├── README.md
+├── AGENTS.md
+├── requirements.txt
+├── .env.example
 │
 ├── docs/
 │   ├── 03_dicionario_dados.md        (existe)
@@ -500,7 +539,8 @@ analise-bordero-fluminense/
 │   └── ...                           (demais documentos serão criados conforme as etapas avançarem)
 │
 ├── images/
-│   └── DER - Fluminense_borderô.png  (existe)
+│   ├── DER - Fluminense_borderô.png  (existe)
+│   └── dashboard_resumo_temporada_2026.jpg
 │
 ├── database/
 │   ├── schema_mysql_analise_bordero_fluminense.sql
@@ -520,7 +560,7 @@ analise-bordero-fluminense/
 │   └── processed/    (reservada; o ETL ainda não gera arquivos aqui)
 │
 └── powerbi/
-    └── ...
+    └── Dashboard - Fluminense Borderô.pbix
 ```
 
 ---
@@ -549,7 +589,7 @@ O diagrama da modelagem (DER) está em [`images/DER - Fluminense_borderô.png`](
 * [x] Definição e documentação do modelo lógico (DER)
 * [x] Definição da metodologia de `importancia_partida` (escala 0–10 documentada)
 * [x] Definição da metodologia de `apelo_adversario` (escala 0–10 documentada)
-* [ ] Definição do G12 utilizado na análise
+* [x] Definição do G12 utilizado na análise (clubes grandes do Brasil e clubes tradicionais sul-americanos)
 * [x] Criação do dicionário de dados
 * [x] Definição do MySQL local como banco principal do projeto
 * [x] Configuração do ambiente MySQL local e conexão Python com o banco
@@ -561,13 +601,15 @@ O diagrama da modelagem (DER) está em [`images/DER - Fluminense_borderô.png`](
 * [x] Implementação do ETL modularizado para ler, preparar e carregar as abas das planilhas no MySQL
 * [x] Implementação da execução de uma planilha isolada ou de um lote explícito
 * [x] Carga dos dados de 31 partidas disponíveis até o momento
-* [ ] Conferência sistemática das quantidades e dos totais oficiais de todas as 31 partidas
+* [x] Conferência sistemática das quantidades e dos totais oficiais de todas as 31 partidas (soma das linhas = totais oficiais de arrecadação, despesas e público)
 * [ ] Integração com fontes complementares
 * [x] Implementação do tratamento e da transformação dos dados necessários à carga ETL
 * [ ] Análise exploratória
 * [ ] Modelagem estatística
-* [ ] Desenvolvimento do modelo no Power BI
-* [ ] Construção do dashboard
+* [x] Desenvolvimento do modelo no Power BI
+* [x] Primeira página do dashboard (Resumo Temporada 2026)
+* [ ] Páginas de análise do dashboard (demanda, receita, contexto)
+* [ ] Documentação do modelo dimensional e das medidas
 * [ ] Documentação dos resultados
 * [ ] Publicação do projeto como portfólio
 
@@ -607,6 +649,6 @@ O objetivo é que o projeto não seja apenas um dashboard final, mas um exemplo 
 
 Este projeto encontra-se em fase de desenvolvimento. O modelo conceitual e lógico está documentado no DER, no documento de modelagem e no dicionário de dados. Os PDFs originais são preservados em `data/raw/`, e as planilhas transcritas e revisadas ficam em `data/interim/`. O pipeline ETL carrega os dados no MySQL local; os dados de 31 partidas disponíveis até o momento já foram inseridos. Algumas partidas permanecem pendentes porque seus borderôs ainda não foram disponibilizados.
 
-Os critérios e exemplos de pontuação para `importancia_partida` e `apelo_adversario` estão documentados em [Metodologia dos atributos da partida](docs/07_metodologia_atributos_partida.md). A conferência sistemática dos dados carregados, a conclusão do inventário e a revisão das transcrições permanecem pendentes. O período da amostra ainda precisa ser definido antes das análises completas. As análises, conclusões e visualizações ainda não foram finalizadas.
+Os critérios e exemplos de pontuação para `importancia_partida` e `apelo_adversario` estão documentados em [Metodologia dos atributos da partida](docs/07_metodologia_atributos_partida.md). A conferência sistemática dos dados carregados, a conclusão do inventário e a revisão das transcrições permanecem pendentes. O período da amostra ainda precisa ser definido antes das análises completas. A primeira página do dashboard foi produzida; as análises e conclusões ainda não foram finalizadas.
 
 Resultados apresentados futuramente serão baseados nos dados coletados e na metodologia documentada neste repositório.
