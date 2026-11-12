@@ -596,7 +596,7 @@ O diagrama da modelagem (DER) está em [`images/DER - Fluminense_borderô.png`](
 * [x] Adaptação do DDL para MySQL e revisão de `INGRESSO_PARTIDA` para preservar descrições originais e aceitar setor/categoria não informados
 * [ ] Teste de instalação limpa e validação das restrições do DDL revisado
 * [x] Organização inicial dos PDFs originais (`data/raw/`) e das transcrições Excel (`data/interim/`)
-* [ ] Conclusão do inventário das partidas e dos borderôs disponíveis da temporada 2026
+* [x] Conclusão do inventário das partidas e dos borderôs disponíveis da temporada 2026
 * [ ] Revisão cruzada das transcrições com os PDFs originais
 * [x] Implementação do ETL modularizado para ler, preparar e carregar as abas das planilhas no MySQL
 * [x] Implementação da execução de uma planilha isolada ou de um lote explícito
