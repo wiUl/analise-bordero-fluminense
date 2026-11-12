@@ -3,7 +3,7 @@
 
 ## 1. Objetivo do projeto
 
-Desenvolver uma base de dados relacional a partir dos borderôs oficiais das partidas do Fluminense FC como mandante.
+Desenvolver uma base de dados relacional e uma camada analítica a partir dos borderôs oficiais das partidas do Fluminense FC como mandante, para entender o público e a arrecadação e identificar o que pode aumentar o público sem prejudicar as receitas.
 
 O projeto busca permitir análises sobre:
 - Público presente e ingressos comercializados.
@@ -12,7 +12,7 @@ O projeto busca permitir análises sobre:
 - Despesas e receitas das partidas.
 - Influência de fatores esportivos e contextuais sobre público e arrecadação.
 
-O projeto utiliza Python, pandas, MySQL e Power BI.
+O projeto utiliza Python, pandas, MySQL e Power BI. A amostra atual é a temporada 2026 (31 partidas como mandante); há a intenção de ampliar para temporadas anteriores.
 
 ## 2. Tecnologias e ambiente
 
@@ -22,17 +22,18 @@ O projeto utiliza Python, pandas, MySQL e Power BI.
 - MySQL Community Server 8.0 como banco de dados.
 - mysql-connector-python para conexão com o banco.
 - python-dotenv para gerenciamento de variáveis de ambiente.
-- Power BI para análise e visualização dos dados.
+- Power BI para modelagem dimensional, medidas DAX e dashboards. O projeto está versionado em `powerbi/` nos formatos `.pbix`, `.pbit` e `.pbip` (modelo em TMDL e relatório em PBIR).
+- As dependências Python estão em `requirements.txt` (UTF-8).
 
 O banco utilizado é `analise_bordero_fluminense`.
 
-As credenciais de conexão devem ser carregadas do arquivo `.env`. Nunca inserir credenciais diretamente nos scripts ou publicá-las no GitHub.
+As credenciais de conexão devem ser carregadas do arquivo `.env`. Nunca inserir credenciais diretamente nos scripts ou publicá-las no GitHub. O modelo das variáveis está em `.env.example`. O `.gitignore` cobre `.env`, `__pycache__/`, `*.py[cod]`, `**/.pbi/localSettings.json` e `**/.pbi/cache.abf`.
 
 ## 3. Estrutura dos dados de origem
 
-Os PDFs originais estão em `data/raw/`.
+Os PDFs originais estão em `data/raw/` (31 borderôs, um por partida). Não manter ali arquivos que não sejam borderôs nem duplicados.
 
-As planilhas Excel transcritas e revisadas estão em `data/interim/`.
+As planilhas Excel transcritas e revisadas estão em `data/interim/` (31 planilhas, uma por partida). `data/processed/` está reservada e não é usada pelo ETL atual.
 
 Cada planilha de partida possui as seguintes abas:
 
@@ -87,7 +88,7 @@ Não criar classificações artificiais como "Não informado" para preencher dim
 
 ## 5. Modelagem do banco
 
-O banco possui 15 tabelas, organizadas para representar partidas, dimensões de referência, ingressos, despesas, resumos financeiros e informações contextuais e esportivas.
+O banco possui 15 tabelas, organizadas para representar partidas, dimensões de referência, ingressos, despesas, resumos financeiros e informações contextuais e esportivas. O DDL vigente é `database/schema_mysql_analise_bordero_fluminense.sql`; não há outro arquivo de DDL.
 
 Consultar os documentos existentes em `docs/` e o DDL do projeto antes de propor alterações na modelagem.
 
@@ -101,13 +102,27 @@ Decisões importantes:
 - A tabela `RESUMO_FINANCEIRO_PARTIDA` armazena os valores oficiais para conferência dos totais calculados.
 - `resumo_financeiro_partida.consignatarios` armazena o valor oficial destinado às instituições consignatárias, descontado da receita líquida quando o resultado é positivo; preservar NULL quando não informado.
 
+- Na camada Power BI (não no banco), setor e plano sem informação aparecem como `Sem Setor` e `Sem Plano`, apenas para formar chaves únicas na dimensão de ingressos. No banco, o `NULL` é preservado.
+- `e_clube_g12` marca os clubes grandes do Brasil e, fora do país, os clubes tradicionais sul-americanos. "G12" é um rótulo do projeto, exibido como "Clubes Grandes" no dashboard. Ver `docs/07_metodologia_atributos_partida.md`.
+
 As colunas geradas `id_setor_chave`, `id_categoria_chave` e `id_plano_chave` são utilizadas pelo MySQL para permitir restrições de unicidade envolvendo valores NULL. Não devem ser incluídas nos INSERTs.
 
 ## 6. Organização do código ETL
 
-O código de leitura e preparação está em:
+O código do ETL está em:
 
-`scripts/etl/leitura_excel.py`
+- `scripts/main.py` — orquestração; carrega uma planilha por transação.
+- `scripts/etl/leitura_excel.py` — localização, validação das abas e leitura.
+- `scripts/etl/normalizacao.py` — normalização de espaços e textos.
+- `scripts/etl/preparacao.py` — preparação dos registros de cada aba.
+- `scripts/etl/banco_mysql.py` — conexão, recuperação e cadastro de referências, inserções e conferência.
+
+Execução, a partir da raiz do repositório e com o `.env` configurado:
+
+- `python -m scripts.main --arquivo "data\interim\NOME.xlsx"` para uma planilha;
+- `python -m scripts.main --lote` para todas as planilhas de `data/interim/`.
+
+É obrigatório escolher um dos modos.
 
 O ETL deve ser desenvolvido de forma incremental, organizado por etapas:
 
@@ -141,35 +156,41 @@ Priorizar operações incrementais e idempotentes, especialmente para:
 
 Não presumir que IDs AUTO_INCREMENT serão iguais entre diferentes execuções ou ambientes. Recuperar IDs por consultas ao banco ou utilizar mecanismos apropriados de integridade.
 
-Sempre conferir a quantidade de registros e os totais após uma carga.
+Sempre conferir a quantidade de registros e os totais após uma carga. O ETL verifica as contagens existentes antes de inserir (carrega se vazio, ignora se completo e avisa se parcial); essa verificação compara contagens, não o conteúdo.
 
 ## 8. Estado atual do desenvolvimento
 
-O banco MySQL foi criado e as tabelas foram implementadas.
+### Concluído
 
-A conexão Python com o MySQL já foi testada com sucesso.
+- Coleta dos borderôs de 31 partidas da temporada 2026 (PDFs em `data/raw/`) e transcrição revisada em planilhas (`data/interim/`).
+- Banco MySQL criado, com 15 tabelas, e conexão Python testada.
+- ETL completo, com tratamento de todas as abas (PARTIDA, INGRESSOS, DESPESAS, RESUMO, CONTEXTO, ATRIBUTOS e DESEMPENHO), execução por arquivo ou em lote e transação por planilha.
+- Carga das 31 partidas no MySQL.
+- Conferência sistemática: a soma das linhas coincide com os totais oficiais de arrecadação, despesas e público nas 31 partidas. A única divergência é de R$ 12,00 na receita líquida de Fluminense x Flamengo (12/04/2026); ela está registrada e não deve ser "corrigida" sem consultar o PDF.
+- Modelo dimensional no Power BI (`dim_partida`, `dim_ingresso`, `dim_data`, `fato_ingresso`, `fato_despesa`, `_Medidas`), documentado em `docs/05_modelo_powerbi.md`.
+- Primeira página do dashboard: Resumo Temporada 2026, com página de tooltip.
+- Definição de G12 documentada.
 
-A leitura e a preparação dos dados da aba INGRESSOS foram desenvolvidas para uma partida.
+### Pendente
 
-A carga de 44 registros de ingressos foi executada para `id_partida = 2`, correspondente ao jogo Fluminense x Athletico Paranaense, em 15/03/2026.
+- Revisão cruzada das transcrições contra os PDFs.
+- Integração de fontes complementares (por exemplo, série de sócios).
+- Validação da capacidade do estádio como denominador da ocupação.
+- Demais páginas do dashboard e análises de preço × demanda, composição de público e contexto.
+- Definição do período da amostra e eventual inclusão de temporadas anteriores.
+- Teste de instalação limpa a partir do repositório.
 
-A inserção foi confirmada por consultas SELECT, incluindo a preservação de valores NULL.
+### Indicadores e definições em uso
 
-A carga de 17 registros da aba DESPESAS foi executada para `id_partida = 2` e conferida pela quantidade e pelo total.
+- **Público presente:** soma de `quantidade_utilizada`.
+- **Público pagante:** linhas com preço informado. Linhas com preço `NULL` (cadeiras cativas, tribuna, gratuidades por lei) são gratuidades.
+- **Ticket médio:** arrecadação dividida pelo público pagante.
+- **Receita líquida:** arrecadação menos despesas, equivalente à receita líquida do borderô, antes dos consignatários.
+- Os valores oficiais do resumo financeiro servem para conferir os cálculos; não substituí-los por valores calculados.
 
 ### Próxima etapa
 
-Continuar o ETL pela aba RESUMO da mesma partida (`id_partida = 2`), após atualizar o esquema MySQL para incluir `consignatarios`.
-
-Antes da carga, verificar a estrutura real da tabela com:
-
-```sql
-DESCRIBE resumo_financeiro_partida;
-```
-
-`consignatarios` é um valor oficial da aba RESUMO, distinto de `retencoes`. Deve ser transcrito, não calculado; preservar NULL quando ausente e não tratar automaticamente como zero. `soma_das_linhas`, `diferenca_soma_menos_oficial` e `observacao` são informações de conferência e não integram a tabela relacional atual.
-
-Não desenvolver o INSERT antes de conferir a estrutura real da tabela e verificar se já existe resumo para a partida.
+Escolher com o responsável a próxima frente, em geral uma destas: validar a ocupação, iniciar as páginas de análise do dashboard ou fazer a revisão cruzada com os PDFs. Antes de alterar o modelo do Power BI, consultar `docs/05_modelo_powerbi.md`.
 
 ## 9. Como trabalhar com o responsável pelo projeto
 
@@ -194,10 +215,14 @@ Antes de alterações relevantes no banco, revisar o DDL e os documentos de mode
 
 Consultar os documentos existentes em `docs/`, especialmente:
 
-- `docs/03_dicionario_dados.md`
-- `docs/04_modelagem.md`
+- `docs/03_dicionario_dados.md` — dicionário do banco.
+- `docs/04_modelagem.md` — modelagem relacional.
+- `docs/05_modelo_powerbi.md` — modelo dimensional, decisões, medidas DAX e relatório.
+- `docs/07_metodologia_atributos_partida.md` — critérios de importância, apelo, clássico e G12.
+- `database/README.md` — uso do DDL.
+- `README.md` — visão geral, fluxo, estrutura do repositório e roadmap; atualizar quando o estado do projeto mudar.
 
-A documentação deve refletir a implementação real. Não documentar funcionalidades que ainda não foram implementadas como se estivessem concluídas.
+A documentação deve refletir a implementação real. Ao mudar o modelo do Power BI, as medidas ou o banco, atualizar o documento correspondente e o roadmap do README. Não documentar funcionalidades que ainda não foram implementadas como se estivessem concluídas.
 
 
 ## 11. Idioma e comunicação
