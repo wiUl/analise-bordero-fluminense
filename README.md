@@ -13,7 +13,7 @@ O projeto busca construir uma base de dados estruturada a partir dos borderôs e
 | **Pergunta** | Como preço, contexto da partida e perfil do jogo se relacionam com público, ocupação e receita de bilheteria do Fluminense? |
 | **Fonte** | Borderôs de jogos do Fluminense como mandante, divulgados publicamente pelo clube (PDFs) no [Portal da Transparência do Fluminense](https://transparenciafluminense.com.br/public/lista/124/arenas/operacao-de-jogos/borderos). Amostra inicial: temporada **2026**. |
 | **Já existe** | Modelagem relacional (DER), dicionário de dados, metodologia dos atributos, banco MySQL local e pipeline ETL para as planilhas de borderô. Os dados de 31 partidas foram carregados. Modelo dimensional no Power BI (`dim_partida`, `dim_ingresso`, `dim_data`, `fato_ingresso`, `fato_despesa`) e a página-resumo do dashboard. |
-| **Em andamento / pendente** | Revisão cruzada das transcrições, conclusão do inventário, integração de fontes complementares, demais páginas do dashboard e análises de demanda, receita e contexto. |
+| **Em andamento / pendente** | Revisão cruzada das transcrições, integração de fontes complementares, demais páginas do dashboard e análises de demanda, receita e contexto. |
 | **Tecnologias** | MySQL local, SQL, Python, Excel e Power BI. |
 
 A coleta e a transcrição da temporada 2026 continuam em andamento; algumas partidas ainda não possuem borderô disponível. Existe uma primeira página de dashboard (resumo da temporada 2026); as análises de preço × demanda e de contexto ainda não foram produzidas.
@@ -650,6 +650,6 @@ O objetivo é que o projeto não seja apenas um dashboard final, mas um exemplo 
 
 Este projeto encontra-se em fase de desenvolvimento. O modelo conceitual e lógico está documentado no DER, no documento de modelagem e no dicionário de dados. Os PDFs originais são preservados em `data/raw/`, e as planilhas transcritas e revisadas ficam em `data/interim/`. O pipeline ETL carrega os dados no MySQL local; os dados de 31 partidas disponíveis até o momento já foram inseridos. Algumas partidas permanecem pendentes porque seus borderôs ainda não foram disponibilizados.
 
-Os critérios e exemplos de pontuação para `importancia_partida` e `apelo_adversario` estão documentados em [Metodologia dos atributos da partida](docs/07_metodologia_atributos_partida.md). A conferência sistemática dos dados carregados, a conclusão do inventário e a revisão das transcrições permanecem pendentes. O período da amostra ainda precisa ser definido antes das análises completas. A primeira página do dashboard foi produzida; as análises e conclusões ainda não foram finalizadas.
+Os critérios e exemplos de pontuação para `importancia_partida` e `apelo_adversario` estão documentados em [Metodologia dos atributos da partida](docs/07_metodologia_atributos_partida.md). A conferência sistemática dos dados carregados e o inventário das 31 partidas estão concluídos; a revisão cruzada das transcrições contra os PDFs permanece pendente. O período da amostra ainda precisa ser definido antes das análises completas. A primeira página do dashboard foi produzida; as análises e conclusões ainda não foram finalizadas.
 
 Resultados apresentados futuramente serão baseados nos dados coletados e na metodologia documentada neste repositório.
