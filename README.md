@@ -250,7 +250,7 @@ Definições usadas nos indicadores:
 * **Ticket médio:** arrecadação ÷ público pagante;
 * **Receita líquida:** arrecadação − despesas.
 
-> A documentação completa das decisões de modelagem e das medidas será criada em `docs/`.
+> Documentação completa das decisões de modelagem, das colunas e das medidas: [docs/05_modelo_powerbi.md](docs/05_modelo_powerbi.md).
 
 ---
 
@@ -535,6 +535,7 @@ analise-bordero-fluminense/
 ├── docs/
 │   ├── 03_dicionario_dados.md        (existe)
 │   ├── 04_modelagem.md               (existe)
+│   ├── 05_modelo_powerbi.md          (existe)
 │   ├── 07_metodologia_atributos_partida.md   (existe)
 │   └── ...                           (demais documentos serão criados conforme as etapas avançarem)
 │
@@ -571,6 +572,7 @@ A documentação detalhada do projeto fica em `docs/` e será ampliada ao longo 
 
 - [Dicionário de dados](docs/03_dicionario_dados.md)
 - [Modelagem de dados](docs/04_modelagem.md)
+- [Modelo no Power BI](docs/05_modelo_powerbi.md)
 - [Metodologia dos atributos da partida](docs/07_metodologia_atributos_partida.md)
 
 O diagrama da modelagem (DER) está em [`images/DER - Fluminense_borderô.png`](images/DER%20-%20Fluminense_border%C3%B4.png).
@@ -609,7 +611,7 @@ O diagrama da modelagem (DER) está em [`images/DER - Fluminense_borderô.png`](
 * [x] Desenvolvimento do modelo no Power BI
 * [x] Primeira página do dashboard (Resumo Temporada 2026)
 * [ ] Páginas de análise do dashboard (demanda, receita, contexto)
-* [ ] Documentação do modelo dimensional e das medidas
+* [x] Documentação do modelo dimensional e das medidas ([docs/05_modelo_powerbi.md](docs/05_modelo_powerbi.md))
 * [ ] Documentação dos resultados
 * [ ] Publicação do projeto como portfólio
 
