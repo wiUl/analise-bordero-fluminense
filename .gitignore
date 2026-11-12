@@ -4,3 +4,7 @@
 # Python
 __pycache__/
 *.py[cod]
+
+# Power BI (PBIP): cache e configurações locais
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
