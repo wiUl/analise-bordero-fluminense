@@ -115,7 +115,7 @@ Quando possível, registre uma justificativa curta para cada nota na planilha de
 - `justificativa_importancia`: "Final única da Libertadores, valendo o título continental."
 - `justificativa_apelo`: "Boca Juniors: enorme tradição e reconhecimento continental."
 
-As justificativas podem permanecer na planilha e na documentação metodológica; não é obrigatório criar novas colunas no PostgreSQL nesta etapa.
+As justificativas podem permanecer na planilha e na documentação metodológica; não é obrigatório criar novas colunas no banco nesta etapa.
 
 Regras gerais:
 
@@ -134,6 +134,8 @@ Regras gerais:
 
 ### G12 — `ADVERSARIO.e_clube_g12`
 
-`e_clube_g12 = 1` quando o adversário pertencer à composição do G12 adotada pelo projeto; caso contrário, `0`. A composição do grupo e o critério temporal devem ser documentados para evitar mudanças implícitas durante a análise.
+`e_clube_g12 = 1` quando o adversário for um **clube grande do Brasil** ou, fora do Brasil, um **clube tradicional sul-americano**; caso contrário, `0`. O nome "G12" é um rótulo do projeto (exibido como "Clubes Grandes" no dashboard) e não se limita aos 12 grandes brasileiros.
+
+Composição aplicada às partidas de 2026: Atlético Mineiro, Botafogo, Corinthians, Flamengo, Grêmio, Internacional, Palmeiras, Santos, São Paulo e Vasco (Brasil); Bolívar (América do Sul). A composição e o critério temporal devem ser mantidos documentados para evitar mudanças implícitas durante a análise; ao incluir novas temporadas, novos adversários devem ser classificados por esse mesmo critério.
 
 Esses indicadores são classificações objetivas definidas pelo projeto. O G12 não substitui `apelo_adversario`, que continua sendo um índice de 0 a 10, contextual e específico da partida.
