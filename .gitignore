@@ -1,2 +1,6 @@
-#Credencias e variáveis de ambiente
+# Credenciais e variáveis de ambiente
 .env
+
+# Python
+__pycache__/
+*.py[cod]
