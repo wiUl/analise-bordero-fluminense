@@ -545,7 +545,6 @@ analise-bordero-fluminense/
 │
 ├── database/
 │   ├── schema_mysql_analise_bordero_fluminense.sql
-│   ├── schema_mysql_revisado.sql
 │   └── README.md
 │
 ├── scripts/
