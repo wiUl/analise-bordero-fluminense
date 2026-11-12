@@ -34,7 +34,7 @@ Representa o clube adversário, identificado por nome padronizado e com indicado
 | `id_adversario` | INT | Sim | Interno | Identificador único. PK. |
 | `nome` | VARCHAR | Sim | Fonte oficial | Nome padronizado do adversário. Único. |
 | `e_classico` | BOOLEAN | Sim | Metodológico | Indica se o adversário é classificado como clássico para o projeto. |
-| `e_clube_g12` | BOOLEAN | Sim | Metodológico | Indica se o adversário pertence ao G12 adotado pelo projeto. |
+| `e_clube_g12` | BOOLEAN | Sim | Metodológico | Indica se o adversário é clube grande do Brasil ou clube tradicional sul-americano (definição de "G12" do projeto). |
 
 Os dois indicadores são atributos de `ADVERSARIO` no modelo atual. `apelo_adversario` continua em `ATRIBUTOS_PARTIDA`, pois é avaliado para cada partida/contexto histórico.
 
