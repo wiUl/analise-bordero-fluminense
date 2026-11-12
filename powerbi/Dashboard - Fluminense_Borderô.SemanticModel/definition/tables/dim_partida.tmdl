@@ -1,0 +1,395 @@
+table dim_partida
+	lineageTag: f0692806-48d7-4580-b66e-2fc3820e7ebe
+
+	column id_partida
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 4e433066-14ae-4dd5-aa77-47305485bf6e
+		summarizeBy: none
+		sourceColumn: id_partida
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column data
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: 2929db78-8019-47e1-8a0a-9729a9d95309
+		summarizeBy: none
+		sourceColumn: data
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column horario
+		dataType: dateTime
+		formatString: Long Time
+		lineageTag: f029d2cd-643d-47dc-9a7f-b59450b1b009
+		summarizeBy: none
+		sourceColumn: horario
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Time
+
+	column rodada
+		dataType: string
+		lineageTag: 077739c1-974b-4655-961b-33a85bee99c1
+		summarizeBy: none
+		sourceColumn: rodada
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_adversario
+		dataType: string
+		lineageTag: f9391744-4d92-46a1-8204-2192a7fe47fa
+		summarizeBy: none
+		sourceColumn: nome_adversario
+
+		annotation SummarizationSetBy = Automatic
+
+	column e_classico
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 33c4497e-76f4-4113-889c-4e2ac5a1d48f
+		summarizeBy: none
+		sourceColumn: e_classico
+
+		annotation SummarizationSetBy = Automatic
+
+	column e_clube_g12
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: daf68585-4b0b-4f62-8033-50a9b4822e41
+		summarizeBy: none
+		sourceColumn: e_clube_g12
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_estadio
+		dataType: string
+		lineageTag: e0a3c179-8a97-4a91-abf0-d0d7a36e8860
+		summarizeBy: none
+		sourceColumn: nome_estadio
+
+		annotation SummarizationSetBy = Automatic
+
+	column capacidade
+		dataType: int64
+		formatString: 0
+		lineageTag: 38ed5beb-4c62-4688-9c25-4df949f9d63b
+		summarizeBy: none
+		sourceColumn: capacidade
+
+		annotation SummarizationSetBy = User
+
+	column importancia_partida
+		dataType: double
+		lineageTag: 2c79979f-d239-4fe1-a605-80dba17618b0
+		summarizeBy: none
+		sourceColumn: importancia_partida
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column apelo_adversario
+		dataType: double
+		lineageTag: ae1af5cd-b730-42ad-b8ef-cedc89f7b346
+		summarizeBy: none
+		sourceColumn: apelo_adversario
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column feriado
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 879ee11c-d539-47ab-8f99-f2c54f3630fd
+		summarizeBy: none
+		sourceColumn: feriado
+
+		annotation SummarizationSetBy = Automatic
+
+	column dias_desde_ultimo_jogo_maracana
+		dataType: int64
+		formatString: 0
+		lineageTag: 5feb0bf7-cd2b-4e6e-9cf6-ade9a5cda3df
+		summarizeBy: none
+		sourceColumn: dias_desde_ultimo_jogo_maracana
+
+		annotation SummarizationSetBy = User
+
+	column posicao_fluminense
+		dataType: int64
+		formatString: 0
+		lineageTag: d5d0334a-8f3a-4707-9058-7c77df08446a
+		summarizeBy: none
+		sourceColumn: posicao_fluminense
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	column pontos_fluminense
+		dataType: int64
+		formatString: 0
+		lineageTag: 1ecc4e16-19b0-44f9-98df-5caa094b0dae
+		summarizeBy: none
+		sourceColumn: pontos_fluminense
+
+		annotation SummarizationSetBy = User
+
+	column vitorias_ultimos_5
+		dataType: int64
+		formatString: 0
+		lineageTag: ec0b6160-9a18-4e94-bd01-67d4c70c5be3
+		summarizeBy: none
+		sourceColumn: vitorias_ultimos_5
+
+		annotation SummarizationSetBy = User
+
+	column empates_ultimos_5
+		dataType: int64
+		formatString: 0
+		lineageTag: 0c8d5bea-be29-4c08-a046-7c05675b82ac
+		summarizeBy: none
+		sourceColumn: empates_ultimos_5
+
+		annotation SummarizationSetBy = User
+
+	column derrotas_ultimos_5
+		dataType: int64
+		formatString: 0
+		lineageTag: e57980dd-32d4-4428-9157-1986afbd6db3
+		summarizeBy: none
+		sourceColumn: derrotas_ultimos_5
+
+		annotation SummarizationSetBy = User
+
+	column gols_marcados_ultimos_5
+		dataType: int64
+		formatString: 0
+		lineageTag: a2c3ce47-a3a0-42be-bcf9-3b1af17ccea2
+		summarizeBy: none
+		sourceColumn: gols_marcados_ultimos_5
+
+		annotation SummarizationSetBy = User
+
+	column gols_sofridos_ultimos_5
+		dataType: int64
+		formatString: 0
+		lineageTag: 662e0aa3-9a42-4757-8fdc-2d7291856fe1
+		summarizeBy: none
+		sourceColumn: gols_sofridos_ultimos_5
+
+		annotation SummarizationSetBy = User
+
+	column total_disponivel
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 514979b3-9ef3-499b-a759-84aff2abf6bf
+		summarizeBy: sum
+		sourceColumn: total_disponivel
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_devolvido
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: bc98fb82-d6d4-48ea-b862-7023a420d419
+		summarizeBy: sum
+		sourceColumn: total_devolvido
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_utilizado
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2a5c4fc0-5ef7-4524-8869-9000797bcfda
+		summarizeBy: sum
+		sourceColumn: total_utilizado
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column arrecadacao_bruta
+		dataType: double
+		isHidden
+		lineageTag: 2ad304b9-b747-45e1-93e6-810b97af5749
+		summarizeBy: sum
+		sourceColumn: arrecadacao_bruta
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column total_despesas
+		dataType: double
+		isHidden
+		lineageTag: 385a11ac-e71e-4157-ad00-e338fb98346c
+		summarizeBy: sum
+		sourceColumn: total_despesas
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column retencoes
+		dataType: double
+		isHidden
+		lineageTag: 938f6130-daf5-423d-bf55-e1c21e2f037d
+		summarizeBy: sum
+		sourceColumn: retencoes
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column receita_liquida
+		dataType: double
+		isHidden
+		lineageTag: 44925479-ea5b-4b35-9f18-34338dcf3984
+		summarizeBy: sum
+		sourceColumn: receita_liquida
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column consignatarios
+		dataType: double
+		isHidden
+		lineageTag: 8fc84c7a-7853-4afe-aee6-fd8dbec652cc
+		summarizeBy: sum
+		sourceColumn: consignatarios
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column resultado_final
+		dataType: double
+		isHidden
+		lineageTag: ffdef8e6-4ba4-423c-b0c9-9aca17b05c09
+		summarizeBy: sum
+		sourceColumn: resultado_final
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column complemento_contabil
+		dataType: double
+		isHidden
+		lineageTag: 706fbac4-f3da-45cb-9de2-f6b6de395ca3
+		summarizeBy: sum
+		sourceColumn: complemento_contabil
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column nome_competicao
+		dataType: string
+		lineageTag: 26a5afbe-424a-4f57-ab78-04c8517a9942
+		summarizeBy: none
+		sourceColumn: nome_competicao
+
+		annotation SummarizationSetBy = Automatic
+
+	column temporada
+		dataType: int64
+		formatString: 0
+		lineageTag: e11f30dc-2dc8-41eb-a2a3-9685d5107448
+		summarizeBy: none
+		sourceColumn: temporada
+
+		annotation SummarizationSetBy = User
+
+	column Jogo = FORMAT(dim_partida[data], "dd/mm") & " " & dim_partida[nome_adversario]
+		lineageTag: 470f4ef3-646e-4d88-8385-6ed66c99e4cb
+		summarizeBy: none
+		sortByColumn: data
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = User
+
+	column Classico = if(dim_partida[e_classico] = TRUE(), "Sim", "Não")
+		lineageTag: ce135e2f-aa65-4fe6-bf8e-4638dabc080a
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Clubes Grandes' = if(dim_partida[e_clube_g12] = TRUE(), "Sim", "Não")
+		lineageTag: e34ae9f8-e6ef-4388-8980-4be61f3c63c3
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_partida = m
+		mode: import
+		source =
+				let
+				  Origem = src_partida,
+				  #"Consultas mescladas" = Table.NestedJoin(Origem, {"adversario_id"}, src_adversario, {"id_adversario"}, "src_adversario", JoinKind.LeftOuter),
+				  #"Expandido src_adversario" = Table.ExpandTableColumn(#"Consultas mescladas", "src_adversario", {"nome", "e_classico", "e_clube_g12"}, {"nome", "e_classico", "e_clube_g12"}),
+				  #"Colunas removidas" = Table.RemoveColumns(#"Expandido src_adversario", {"analise_bordero_fluminense.adversario", "analise_bordero_fluminense.atributos_partida", "analise_bordero_fluminense.competicao_temporada", "analise_bordero_fluminense.contexto_partida", "analise_bordero_fluminense.desempenho_partida", "analise_bordero_fluminense.despesa_partida", "analise_bordero_fluminense.estadio", "analise_bordero_fluminense.ingresso_partida", "analise_bordero_fluminense.resumo_financeiro_partida"}),
+				  #"Consultas mescladas 1" = Table.NestedJoin(#"Colunas removidas", {"competicao_temporada_id"}, src_competicao_temporada, {"id_competicao_temporada"}, "src_competicao_temporada", JoinKind.LeftOuter),
+				  #"Expandido src_competicao_temporada" = Table.ExpandTableColumn(#"Consultas mescladas 1", "src_competicao_temporada", {"id_competicao", "id_temporada"}, {"id_competicao", "id_temporada"}),
+				  #"Consultas mescladas 2" = Table.NestedJoin(#"Expandido src_competicao_temporada", {"estadio_id"}, src_estadio, {"id_estadio"}, "src_estadio", JoinKind.LeftOuter),
+				  #"Expandido src_estadio" = Table.ExpandTableColumn(#"Consultas mescladas 2", "src_estadio", {"nome", "capacidade"}, {"nome.1", "capacidade"}),
+				  #"Consultas mescladas 3" = Table.NestedJoin(#"Expandido src_estadio", {"id_partida"}, src_atributos_partida, {"id_partida"}, "src_atributos_partida", JoinKind.LeftOuter),
+				  #"Expandido src_atributos_partida" = Table.ExpandTableColumn(#"Consultas mescladas 3", "src_atributos_partida", {"importancia_partida", "apelo_adversario"}, {"importancia_partida", "apelo_adversario"}),
+				  #"Colunas renomeadas" = Table.RenameColumns(#"Expandido src_atributos_partida", {{"nome.1", "nome_estadio"}}),
+				  #"Consultas mescladas 4" = Table.NestedJoin(#"Colunas renomeadas", {"id_partida"}, src_contexto_partida, {"id_partida"}, "src_contexto_partida", JoinKind.LeftOuter),
+				  #"Expandido src_contexto_partida" = Table.ExpandTableColumn(#"Consultas mescladas 4", "src_contexto_partida", {"feriado", "dias_desde_ultimo_jogo_maracana"}, {"feriado", "dias_desde_ultimo_jogo_maracana"}),
+				  #"Consultas mescladas 5" = Table.NestedJoin(#"Expandido src_contexto_partida", {"id_partida"}, src_desempenho_partida, {"id_partida"}, "src_desempenho_partida", JoinKind.LeftOuter),
+				  #"Expandido src_desempenho_partida" = Table.ExpandTableColumn(#"Consultas mescladas 5", "src_desempenho_partida", {"posicao_fluminense", "pontos_fluminense", "vitorias_ultimos_5", "empates_ultimos_5", "derrotas_ultimos_5", "gols_marcados_ultimos_5", "gols_sofridos_ultimos_5"}, {"posicao_fluminense", "pontos_fluminense", "vitorias_ultimos_5", "empates_ultimos_5", "derrotas_ultimos_5", "gols_marcados_ultimos_5", "gols_sofridos_ultimos_5"}),
+				  #"Consultas mescladas 6" = Table.NestedJoin(#"Expandido src_desempenho_partida", {"id_partida"}, src_resumo_financeiro_partida, {"id_partida"}, "src_resumo_financeiro_partida", JoinKind.LeftOuter),
+				  #"Expandido src_resumo_financeiro_partida" = Table.ExpandTableColumn(#"Consultas mescladas 6", "src_resumo_financeiro_partida", {"total_disponivel", "total_devolvido", "total_utilizado", "arrecadacao_bruta", "total_despesas", "retencoes", "receita_liquida", "consignatarios", "resultado_final", "complemento_contabil"}, {"total_disponivel", "total_devolvido", "total_utilizado", "arrecadacao_bruta", "total_despesas", "retencoes", "receita_liquida", "consignatarios", "resultado_final", "complemento_contabil"}),
+				  #"Consultas mescladas 7" = Table.NestedJoin(#"Expandido src_resumo_financeiro_partida", {"id_competicao"}, src_competicao, {"id_competicao"}, "src_competicao", JoinKind.LeftOuter),
+				  #"Expandido src_competicao" = Table.ExpandTableColumn(#"Consultas mescladas 7", "src_competicao", {"nome"}, {"nome.1"}),
+				  #"Colunas renomeadas 1" = Table.RenameColumns(#"Expandido src_competicao", {{"nome.1", "nome_competicao"}}),
+				  #"Consultas mescladas 8" = Table.NestedJoin(#"Colunas renomeadas 1", {"id_temporada"}, src_temporada, {"id_temporada"}, "src_temporada", JoinKind.LeftOuter),
+				  #"Expandido src_temporada" = Table.ExpandTableColumn(#"Consultas mescladas 8", "src_temporada", {"ano"}, {"ano"}),
+				    #"Colunas Renomeadas" = Table.RenameColumns(#"Expandido src_temporada",{{"nome", "nome_adversario"}}),
+				    #"Colunas Removidas" = Table.RemoveColumns(#"Colunas Renomeadas",{"adversario_id", "competicao_temporada_id", "estadio_id", "id_competicao", "id_temporada"}),
+				    #"Colunas Renomeadas1" = Table.RenameColumns(#"Colunas Removidas",{{"ano", "temporada"}})
+				in
+				    #"Colunas Renomeadas1"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navegação
+

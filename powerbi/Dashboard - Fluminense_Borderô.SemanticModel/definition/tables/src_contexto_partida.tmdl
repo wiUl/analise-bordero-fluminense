@@ -1,0 +1,53 @@
+table src_contexto_partida
+	isHidden
+	lineageTag: 217a0db4-9fd8-44e9-befc-1e7ff5eeeab7
+
+	column id_partida
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: a60d1e09-0683-4378-96a3-10920483a3a1
+		summarizeBy: sum
+		sourceColumn: id_partida
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column feriado
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: efc3ac3e-60ca-461d-a674-11f88b2670c4
+		summarizeBy: none
+		sourceColumn: feriado
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column dias_desde_ultimo_jogo_maracana
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f9373713-fa62-4c95-915e-ebf790127bff
+		summarizeBy: sum
+		sourceColumn: dias_desde_ultimo_jogo_maracana
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition src_contexto_partida = m
+		mode: import
+		source =
+				let
+				  Origem = MySQL.Database("localhost", "analise_bordero_fluminense"),
+				  #"Navegação 1" = Origem{[Schema = "analise_bordero_fluminense", Item = "contexto_partida"]}[Data]
+				in
+				  #"Navegação 1"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Exception
+

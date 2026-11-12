@@ -1,0 +1,90 @@
+table fato_ingresso
+	lineageTag: 68da16a5-e74f-4f41-8763-dabe77cad4ab
+
+	column id_partida
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: eb1629c0-1742-4f53-a708-1915d393295d
+		summarizeBy: none
+		sourceColumn: id_partida
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column chave_ingresso
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 5fa7f4ee-b124-4710-b379-85ec180953e2
+		summarizeBy: none
+		sourceColumn: chave_ingresso
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column preco
+		dataType: double
+		lineageTag: b5d7ff7c-dc81-446c-941b-831a1f910c70
+		summarizeBy: sum
+		sourceColumn: preco
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column quantidade_disponivel
+		dataType: int64
+		formatString: 0
+		lineageTag: 1a334827-dbbd-4027-b88e-eba23518d742
+		summarizeBy: sum
+		sourceColumn: quantidade_disponivel
+
+		annotation SummarizationSetBy = Automatic
+
+	column quantidade_devolvida
+		dataType: int64
+		formatString: 0
+		lineageTag: a3aba03d-08eb-418f-98f3-b67f7d7dfbad
+		summarizeBy: sum
+		sourceColumn: quantidade_devolvida
+
+		annotation SummarizationSetBy = Automatic
+
+	column quantidade_utilizada
+		dataType: int64
+		formatString: 0
+		lineageTag: efac7716-1052-42d1-bcf0-5dd3d2a4bcf3
+		summarizeBy: sum
+		sourceColumn: quantidade_utilizada
+
+		annotation SummarizationSetBy = Automatic
+
+	column arrecadacao
+		dataType: double
+		lineageTag: 9c131211-bd12-4fdc-8138-5221dc1ce216
+		summarizeBy: sum
+		sourceColumn: arrecadacao
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition fato_ingresso = m
+		mode: import
+		source =
+				let
+				    Fonte = stg_ingresso,
+				    #"Consultas Mescladas" = Table.NestedJoin(Fonte, {"setor", "tipo de ingresso", "tipo de publico", "plano_socio"}, dim_ingresso, {"setor", "tipo de ingresso", "tipo de publico", "plano_socio"}, "dim_ingresso", JoinKind.LeftOuter),
+				    #"dim_ingresso Expandido" = Table.ExpandTableColumn(#"Consultas Mescladas", "dim_ingresso", {"chave_ingresso"}, {"chave_ingresso"}),
+				    #"Outras Colunas Removidas" = Table.SelectColumns(#"dim_ingresso Expandido",{"chave_ingresso", "id_partida", "preco", "quantidade_disponivel", "quantidade_devolvida", "quantidade_utilizada", "arrecadacao"}),
+				    #"Colunas Reordenadas" = Table.ReorderColumns(#"Outras Colunas Removidas",{"id_partida", "chave_ingresso", "preco", "quantidade_disponivel", "quantidade_devolvida", "quantidade_utilizada", "arrecadacao"})
+				in
+				    #"Colunas Reordenadas"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

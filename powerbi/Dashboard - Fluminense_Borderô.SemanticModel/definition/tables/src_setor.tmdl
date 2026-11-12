@@ -1,0 +1,40 @@
+table src_setor
+	isHidden
+	lineageTag: 821a7764-8d7f-4a92-abd3-e721495d5099
+
+	column id_setor
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 034bdd73-32bb-4874-9493-439ea418b09d
+		summarizeBy: sum
+		sourceColumn: id_setor
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome
+		dataType: string
+		isHidden
+		lineageTag: 83e48d60-057c-4543-a405-cc12ccffc4fd
+		summarizeBy: none
+		sourceColumn: nome
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition src_setor = m
+		mode: import
+		source =
+				let
+				  Origem = MySQL.Database("localhost", "analise_bordero_fluminense"),
+				  #"Navegação 1" = Origem{[Schema = "analise_bordero_fluminense", Item = "setor"]}[Data]
+				in
+				  #"Navegação 1"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Table
+

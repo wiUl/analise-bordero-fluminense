@@ -1,0 +1,156 @@
+table src_resumo_financeiro_partida
+	isHidden
+	lineageTag: 7502cb15-b1cd-4c8a-bdfc-dd3e1784ca1f
+
+	column id_partida
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: c85e7cba-2676-4862-b43e-927f9aecdc3d
+		summarizeBy: sum
+		sourceColumn: id_partida
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_disponivel
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f76b12c0-feff-4b71-ad4c-a6e4ad994b40
+		summarizeBy: sum
+		sourceColumn: total_disponivel
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_devolvido
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 1006f2a5-7ed2-4727-889e-decd09c568a1
+		summarizeBy: sum
+		sourceColumn: total_devolvido
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_utilizado
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 55d88627-e44a-4b90-a7d1-519e6c979e8d
+		summarizeBy: sum
+		sourceColumn: total_utilizado
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column arrecadacao_bruta
+		dataType: double
+		isHidden
+		lineageTag: adfb6952-748e-4b0e-a8b4-f66bde7a2ab2
+		summarizeBy: sum
+		sourceColumn: arrecadacao_bruta
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column total_despesas
+		dataType: double
+		isHidden
+		lineageTag: f5d62cbe-b5dd-4130-9f34-d00e15dbb2d4
+		summarizeBy: sum
+		sourceColumn: total_despesas
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column retencoes
+		dataType: double
+		isHidden
+		lineageTag: 5dde37ff-d9fe-4253-b5ce-0f205d620baf
+		summarizeBy: sum
+		sourceColumn: retencoes
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column receita_liquida
+		dataType: double
+		isHidden
+		lineageTag: f30dc29c-d450-41fd-b261-82947c518231
+		summarizeBy: sum
+		sourceColumn: receita_liquida
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column consignatarios
+		dataType: double
+		isHidden
+		lineageTag: 7a25df75-4d82-4f57-a9f8-003ea523af66
+		summarizeBy: sum
+		sourceColumn: consignatarios
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column resultado_final
+		dataType: double
+		isHidden
+		lineageTag: 6fdf56fa-7dd1-4c03-9ff7-56090f26467a
+		summarizeBy: sum
+		sourceColumn: resultado_final
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column complemento_contabil
+		dataType: double
+		isHidden
+		lineageTag: ba7b3d6d-0c99-497e-837a-a461be943c37
+		summarizeBy: sum
+		sourceColumn: complemento_contabil
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition src_resumo_financeiro_partida = m
+		mode: import
+		source =
+				let
+				  Origem = MySQL.Database("localhost", "analise_bordero_fluminense"),
+				  #"Navegação 1" = Origem{[Schema = "analise_bordero_fluminense", Item = "resumo_financeiro_partida"]}[Data]
+				in
+				  #"Navegação 1"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Exception
+

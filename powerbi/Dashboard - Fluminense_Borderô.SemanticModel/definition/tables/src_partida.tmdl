@@ -1,0 +1,104 @@
+table src_partida
+	isHidden
+	lineageTag: b47a0e37-a232-4646-9c79-4390970e8827
+
+	column id_partida
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 459c7cb5-e727-4ed9-ad1a-7f20d89b8011
+		summarizeBy: sum
+		sourceColumn: id_partida
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column data
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: 340c8e41-a7e0-431b-ad59-00421adc23bc
+		summarizeBy: none
+		sourceColumn: data
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column horario
+		dataType: dateTime
+		isHidden
+		formatString: Long Time
+		lineageTag: 9d771586-d86d-4fa8-b805-23482e606203
+		summarizeBy: none
+		sourceColumn: horario
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Time
+
+	column adversario_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 6024d1af-231c-4bec-ba27-4d29c01a2f11
+		summarizeBy: sum
+		sourceColumn: adversario_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column competicao_temporada_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 3b986291-62fa-4bfb-b63d-370192fedacf
+		summarizeBy: sum
+		sourceColumn: competicao_temporada_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column estadio_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 4ef43b74-ea85-4931-8284-4566c09ec752
+		summarizeBy: sum
+		sourceColumn: estadio_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column rodada
+		dataType: string
+		isHidden
+		lineageTag: 970522ba-8e50-46bb-becf-25be9d00386b
+		summarizeBy: none
+		sourceColumn: rodada
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition src_partida = m
+		mode: import
+		source =
+				let
+				  Origem = MySQL.Database("localhost", "analise_bordero_fluminense"),
+				  #"Navegação 1" = Origem{[Schema = "analise_bordero_fluminense", Item = "partida"]}[Data]
+				in
+				  #"Navegação 1"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Exception
+

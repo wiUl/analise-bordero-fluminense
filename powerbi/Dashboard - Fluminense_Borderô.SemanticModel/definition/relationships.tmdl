@@ -1,0 +1,16 @@
+relationship AutoDetected_14c864ec-7f18-4398-97ac-b2ec355581cd
+	fromColumn: fato_ingresso.chave_ingresso
+	toColumn: dim_ingresso.chave_ingresso
+
+relationship d7bcc332-c6c1-e290-b4c0-52adcb68c7f8
+	fromColumn: fato_ingresso.id_partida
+	toColumn: dim_partida.id_partida
+
+relationship ba1b9b27-1428-b305-c18d-034c6bd00923
+	fromColumn: fato_despesa.id_partida
+	toColumn: dim_partida.id_partida
+
+relationship 4191f3ef-618b-b6d8-c29b-abfdf330a854
+	fromColumn: dim_partida.data
+	toColumn: dim_data.Date
+

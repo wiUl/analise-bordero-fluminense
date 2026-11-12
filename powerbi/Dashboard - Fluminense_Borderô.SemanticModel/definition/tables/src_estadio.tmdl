@@ -1,0 +1,85 @@
+table src_estadio
+	isHidden
+	lineageTag: 23d5c00b-19ef-4ee2-b826-72b19cba6179
+
+	column id_estadio
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 3fe25089-bbee-48dd-8712-d30326e4762f
+		summarizeBy: sum
+		sourceColumn: id_estadio
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome
+		dataType: string
+		isHidden
+		lineageTag: b45483aa-258e-490e-99a4-9ca7fb42a6bf
+		summarizeBy: none
+		sourceColumn: nome
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column cidade
+		dataType: string
+		isHidden
+		lineageTag: 400bb76d-e5cd-4fbe-af7d-985b5d60d0ee
+		summarizeBy: none
+		sourceColumn: cidade
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column estado
+		dataType: string
+		isHidden
+		lineageTag: 20209f42-dc6b-428d-abdb-f5f18a494256
+		summarizeBy: none
+		sourceColumn: estado
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column pais
+		dataType: string
+		isHidden
+		lineageTag: 99017df6-6fd3-47a0-a2f0-4ce3ec062d0a
+		summarizeBy: none
+		sourceColumn: pais
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column capacidade
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 06c2cb99-f434-4284-bebe-24853939a784
+		summarizeBy: sum
+		sourceColumn: capacidade
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition src_estadio = m
+		mode: import
+		source =
+				let
+				  Origem = MySQL.Database("localhost", "analise_bordero_fluminense"),
+				  #"Navegação 1" = Origem{[Schema = "analise_bordero_fluminense", Item = "estadio"]}[Data]
+				in
+				  #"Navegação 1"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Exception
+

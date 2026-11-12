@@ -1,0 +1,145 @@
+table _Medidas
+	lineageTag: 638cd239-a82c-4832-a68b-99c0513372e5
+
+	measure Partidas = COUNTROWS(dim_partida)
+		formatString: 0
+		lineageTag: a7a84bd4-933f-429e-8c15-bb401f86d240
+
+	measure 'Total Despesas' = SUM(fato_despesa[valor])
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		lineageTag: 3aa3790c-fe89-4ad5-ae56-26c08a49533b
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-BR"}
+
+	measure 'Diferença Despesas' = [Total Despesas] - [Despesas Oficial]
+		formatString: 0
+		lineageTag: 2e5f2a60-0046-4204-9bf7-70136f96db2d
+
+	measure 'Despesas Oficial' = Sum(dim_partida[total_despesas])
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		lineageTag: 68dcd646-6218-45af-a10c-a229304d2786
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-BR"}
+
+	measure 'Público Presente' = SUM(fato_ingresso[quantidade_utilizada])
+		formatString: #,0
+		lineageTag: a413af94-19e5-4451-8e31-7ba06ab8f4be
+
+	measure 'Público Pagante' = CALCULATE([Público Presente], dim_ingresso[tipo de publico] = "Pagante")
+		formatString: #,0
+		lineageTag: cedbe5ca-2ee8-4126-8576-97e6f7379521
+
+	measure Gratuidades = CALCULATE([Público Presente], dim_ingresso[tipo de publico] = "Gratuidade")
+		formatString: #,0
+		lineageTag: 74e90261-91ad-4748-9818-e430e89f35ec
+
+	measure '% Gratuidades' = DIVIDE([Gratuidades], [Público Presente])
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 9718ad25-38b0-4057-8ed5-7c3ae3edd4f1
+
+	measure Arrecadação = ```
+			SUM(fato_ingresso[arrecadacao])
+			
+			```
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		lineageTag: ef7c6085-14c1-4ea2-b513-354337716f39
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-BR"}
+
+	measure 'Ticket Médio' = DIVIDE([Arrecadação], [Público Pagante])
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		lineageTag: 191f1082-c885-4ec4-8bb3-b83ff2fb25cc
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-BR"}
+
+	measure 'Receita Líquida' = [Arrecadação] - [Total Despesas]
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		lineageTag: 12d695c8-dcf0-4858-b145-3509a5267ae4
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-BR"}
+
+	measure 'Margem Líquida' = DIVIDE([Receita Líquida], [Arrecadação])
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 2294f304-19c8-45db-8c58-17cbbd711cf8
+
+	measure 'Despesa sobre Arrecadação' = DIVIDE([Total Despesas], [Arrecadação])
+		formatString: #,0.00%;-#,0.00%;#,0.00%
+		lineageTag: 44bf891c-95fa-4b64-be7b-4df4c7df91fb
+
+	measure 'Público Médio por Jogo' = AVERAGEX(dim_partida, [Público Presente])
+		formatString: #,0
+		lineageTag: b29fd15f-e393-4efd-b1cf-5ba70db893b1
+
+	measure 'Arrecadação Média por Jogo' = ```
+			AVERAGEX(dim_partida, [Arrecadação])
+			
+			```
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		lineageTag: 328bb571-eea6-4135-8280-badd3c474f75
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-BR"}
+
+	measure 'Despesa Média por Jogo' = AVERAGEX(dim_partida, [Total Despesas])
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		lineageTag: 0ba5b903-56e1-4baa-a557-d0e6ac89f573
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-BR"}
+
+	measure 'Receita Líquida Média por Jogo' = AVERAGEX(dim_partida, [Receita Líquida])
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		lineageTag: 8e8541ef-ed98-4b33-8ae7-2b365b227dca
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-BR"}
+
+	measure Ocupação = DIVIDE([Público Presente], SUMX(dim_partida, dim_partida[capacidade]))
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 6197d84e-2f71-4912-9ac7-8bc3c74e0a3b
+
+	measure 'Diferença Público' = ```
+			[Público Presente] - SUM(dim_partida[total_utilizado])
+			
+			```
+		formatString: 0
+		lineageTag: 1f01d250-3ee4-4a3d-ad6c-111f5ccdbaa2
+
+	measure 'Diferença Arrecadação' = ```
+			[Arrecadação] - SUM(dim_partida[arrecadacao_bruta])
+			
+			```
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		lineageTag: 2190b4a3-6ee0-49cb-bcb8-ec8481f7d940
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-BR"}
+
+	measure 'Diferença Receita Líquida' = [Receita Líquida] - SUM(dim_partida[receita_liquida])
+		formatString: "R$"#,0.00;-"R$"#,0.00;"R$"#,0.00
+		lineageTag: b614d256-13ef-4697-90c0-350bfee9ab4d
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-BR"}
+
+	measure 'Receita por Presente' = DIVIDE([Receita Líquida], [Público Presente])
+		lineageTag: ad97fb31-3609-477a-9457-74d65766efe9
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Coluna 1'
+		dataType: string
+		isHidden
+		lineageTag: 3fb4587b-7d2c-4ca5-8ff2-13a65a89776c
+		summarizeBy: none
+		sourceColumn: Coluna 1
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _Medidas = m
+		mode: import
+		source =
+				let
+				  Origem = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [#"Coluna 1" = _t])
+				in
+				  Origem
+
+	annotation PBI_ResultType = Table
+

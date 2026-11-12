@@ -1,0 +1,65 @@
+table dim_ingresso
+	lineageTag: 6309dc3e-b219-42e9-b913-d872169b2547
+
+	column chave_ingresso
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 886d7366-81dd-4caa-a6a5-336d28e6f496
+		summarizeBy: none
+		sourceColumn: chave_ingresso
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column setor
+		dataType: string
+		lineageTag: 5266711a-e609-4bda-a020-cdc4a4acef76
+		summarizeBy: none
+		sourceColumn: setor
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'tipo de ingresso'
+		dataType: string
+		lineageTag: 2a25d5ae-a558-4eaf-987f-24806f237a00
+		summarizeBy: none
+		sourceColumn: tipo de ingresso
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'tipo de publico'
+		dataType: string
+		lineageTag: 0c688971-3cae-4f36-8726-3703449309d4
+		summarizeBy: none
+		sourceColumn: tipo de publico
+
+		annotation SummarizationSetBy = Automatic
+
+	column plano_socio
+		dataType: string
+		lineageTag: 513e0ff7-dd31-4445-81e6-4ab79f9610b0
+		summarizeBy: none
+		sourceColumn: plano_socio
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_ingresso = m
+		mode: import
+		source =
+				let
+				    Fonte = stg_ingresso,
+				    #"Outras Colunas Removidas" = Table.SelectColumns(Fonte,{"setor", "tipo de ingresso", "tipo de publico", "plano_socio"}),
+				    #"Duplicatas Removidas" = Table.Distinct(#"Outras Colunas Removidas"),
+				    #"Índice Adicionado" = Table.AddIndexColumn(#"Duplicatas Removidas", "Índice", 1, 1, Int64.Type),
+				    #"Colunas Reordenadas" = Table.ReorderColumns(#"Índice Adicionado",{"Índice", "setor", "tipo de ingresso", "tipo de publico", "plano_socio"}),
+				    #"Colunas Renomeadas" = Table.RenameColumns(#"Colunas Reordenadas",{{"Índice", "chave_ingresso"}}),
+				    #"Tipo Alterado" = Table.TransformColumnTypes(#"Colunas Renomeadas",{{"chave_ingresso", Int64.Type}, {"setor", type text}, {"tipo de ingresso", type text}, {"tipo de publico", type text}, {"plano_socio", type text}})
+				in
+				    #"Tipo Alterado"
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

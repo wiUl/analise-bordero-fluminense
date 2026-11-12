@@ -1,0 +1,40 @@
+table src_plano_socio
+	isHidden
+	lineageTag: 14779e47-9ee1-4080-bbda-abfc3256bc21
+
+	column id_plano
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e16c4992-f439-4762-843d-334b7800f931
+		summarizeBy: sum
+		sourceColumn: id_plano
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome
+		dataType: string
+		isHidden
+		lineageTag: 65d473df-bc51-4ec4-b4c4-9ca2aa9cc97e
+		summarizeBy: none
+		sourceColumn: nome
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition src_plano_socio = m
+		mode: import
+		source =
+				let
+				  Origem = MySQL.Database("localhost", "analise_bordero_fluminense"),
+				  #"Navegação 1" = Origem{[Schema = "analise_bordero_fluminense", Item = "plano_socio"]}[Data]
+				in
+				  #"Navegação 1"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Table
+

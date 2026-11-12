@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "Dashboard - Fluminense_Borderô"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "90f6c1db-d7d6-4d19-bdb1-3ff94f100b68"
+  }
+}

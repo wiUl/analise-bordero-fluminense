@@ -1,0 +1,40 @@
+table src_categoria_ingresso
+	isHidden
+	lineageTag: 4f990cb9-4090-4107-9f01-407d835de30c
+
+	column id_categoria
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 9b4ecd5b-2716-4907-ba5e-2513e41b2d69
+		summarizeBy: sum
+		sourceColumn: id_categoria
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome
+		dataType: string
+		isHidden
+		lineageTag: 9ad81603-7391-4e47-911c-a648347ddb9c
+		summarizeBy: none
+		sourceColumn: nome
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition src_categoria_ingresso = m
+		mode: import
+		source =
+				let
+				  Origem = MySQL.Database("localhost", "analise_bordero_fluminense"),
+				  #"Navegação 1" = Origem{[Schema = "analise_bordero_fluminense", Item = "categoria_ingresso"]}[Data]
+				in
+				  #"Navegação 1"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Table
+

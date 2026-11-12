@@ -1,0 +1,17 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "b0c38f5460d9059294c7",
+  "position": {
+    "x": 1265.8750560165079,
+    "y": 20.821704479980706,
+    "z": 1000,
+    "height": 75.367094944101453,
+    "width": 652.45119305856826,
+    "tabOrder": 4000
+  },
+  "visualGroup": {
+    "displayName": "Faixa Horizontal Parte 2",
+    "groupMode": "ScaleMode"
+  },
+  "parentGroupName": "713902971d408a0004b0"
+}

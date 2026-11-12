@@ -1,0 +1,55 @@
+table src_atributos_partida
+	isHidden
+	lineageTag: 26c555f6-fc9d-4530-88fc-f642a6223ddd
+
+	column id_partida
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b2aa67f9-3ec3-4696-9c54-f4bd21e96b3e
+		summarizeBy: sum
+		sourceColumn: id_partida
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column importancia_partida
+		dataType: double
+		isHidden
+		lineageTag: 906d0b51-5d22-4611-831f-1eea4a1bc599
+		summarizeBy: sum
+		sourceColumn: importancia_partida
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column apelo_adversario
+		dataType: double
+		isHidden
+		lineageTag: 99d5950e-e1ac-4894-bf07-9ee6978d7333
+		summarizeBy: sum
+		sourceColumn: apelo_adversario
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition src_atributos_partida = m
+		mode: import
+		source =
+				let
+				  Origem = MySQL.Database("localhost", "analise_bordero_fluminense"),
+				  #"Navegação 1" = Origem{[Schema = "analise_bordero_fluminense", Item = "atributos_partida"]}[Data]
+				in
+				  #"Navegação 1"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Exception
+

@@ -1,0 +1,41 @@
+table src_temporada
+	isHidden
+	lineageTag: bd7bc5de-24d2-4da0-8ac3-9b58158b63b8
+
+	column id_temporada
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 56058e9e-f83a-4443-a248-049f5fd89cb2
+		summarizeBy: sum
+		sourceColumn: id_temporada
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ano
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 206970bb-63e3-42ed-8396-6f9b45d31e0b
+		summarizeBy: sum
+		sourceColumn: ano
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition src_temporada = m
+		mode: import
+		source =
+				let
+				  Origem = MySQL.Database("localhost", "analise_bordero_fluminense"),
+				  #"Navegação 1" = Origem{[Schema = "analise_bordero_fluminense", Item = "temporada"]}[Data]
+				in
+				  #"Navegação 1"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Exception
+

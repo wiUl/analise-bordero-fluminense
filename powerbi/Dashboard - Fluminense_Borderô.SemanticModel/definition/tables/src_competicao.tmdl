@@ -1,0 +1,40 @@
+table src_competicao
+	isHidden
+	lineageTag: 54117b47-e76d-40f1-9fbe-572214dd777d
+
+	column id_competicao
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 16bcdae0-4bc4-415f-88be-259b4d037972
+		summarizeBy: sum
+		sourceColumn: id_competicao
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome
+		dataType: string
+		isHidden
+		lineageTag: a90c06db-fbff-4244-ac4a-181153955da9
+		summarizeBy: none
+		sourceColumn: nome
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition src_competicao = m
+		mode: import
+		source =
+				let
+				  Origem = MySQL.Database("localhost", "analise_bordero_fluminense"),
+				  #"Navegação 1" = Origem{[Schema = "analise_bordero_fluminense", Item = "competicao"]}[Data]
+				in
+				  #"Navegação 1"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Exception
+

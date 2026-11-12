@@ -1,0 +1,16 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "4de79fa5b9b887407db6",
+  "position": {
+    "x": 155.10588235294117,
+    "y": 424.65882352941179,
+    "z": 2000,
+    "height": 609.88235294117646,
+    "width": 859.85882352941178,
+    "tabOrder": 3000
+  },
+  "visualGroup": {
+    "displayName": "Segmentadores",
+    "groupMode": "ScaleMode"
+  }
+}

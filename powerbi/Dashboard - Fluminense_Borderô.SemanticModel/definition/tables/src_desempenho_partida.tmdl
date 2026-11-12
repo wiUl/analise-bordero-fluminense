@@ -1,0 +1,113 @@
+table src_desempenho_partida
+	isHidden
+	lineageTag: 0836ba44-a708-4d33-a720-7a66905aefaf
+
+	column id_partida
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: ae58bc54-057b-451c-8b99-b5cd96187aba
+		summarizeBy: sum
+		sourceColumn: id_partida
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column posicao_fluminense
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 3bb13114-e9ce-4933-ae93-fe391b625ab4
+		summarizeBy: sum
+		sourceColumn: posicao_fluminense
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column pontos_fluminense
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 824d2417-80cc-49b8-bfc9-001e9b74de35
+		summarizeBy: sum
+		sourceColumn: pontos_fluminense
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column vitorias_ultimos_5
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 082dc42c-fda7-4c60-80f9-d333f27a25d6
+		summarizeBy: sum
+		sourceColumn: vitorias_ultimos_5
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column empates_ultimos_5
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 5427f4c7-1bbb-4264-b3d6-efc651e41bb8
+		summarizeBy: sum
+		sourceColumn: empates_ultimos_5
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column derrotas_ultimos_5
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e804ac4d-6081-4858-ac52-a27f5af7644c
+		summarizeBy: sum
+		sourceColumn: derrotas_ultimos_5
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column gols_marcados_ultimos_5
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 85255ad2-cb68-47e8-9076-b87f997dae14
+		summarizeBy: sum
+		sourceColumn: gols_marcados_ultimos_5
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column gols_sofridos_ultimos_5
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 4e1271da-00a6-4b1c-b960-3557abdddc92
+		summarizeBy: sum
+		sourceColumn: gols_sofridos_ultimos_5
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition src_desempenho_partida = m
+		mode: import
+		source =
+				let
+				  Origem = MySQL.Database("localhost", "analise_bordero_fluminense"),
+				  #"Navegação 1" = Origem{[Schema = "analise_bordero_fluminense", Item = "desempenho_partida"]}[Data]
+				in
+				  #"Navegação 1"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Exception
+

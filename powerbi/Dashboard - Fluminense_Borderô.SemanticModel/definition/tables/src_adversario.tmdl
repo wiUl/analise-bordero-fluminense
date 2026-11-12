@@ -1,0 +1,64 @@
+table src_adversario
+	isHidden
+	lineageTag: dbf9a13c-bbbb-4a69-b0ce-96be45757908
+
+	column id_adversario
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: ee2fb23e-f1e4-40bc-a412-0f0af57a7226
+		summarizeBy: sum
+		sourceColumn: id_adversario
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome
+		dataType: string
+		isHidden
+		lineageTag: daaf6b61-db0b-4523-bca2-b617a6736627
+		summarizeBy: none
+		sourceColumn: nome
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column e_classico
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: c8dd4f10-c57a-4072-8fd0-2a7bdbd89fdc
+		summarizeBy: none
+		sourceColumn: e_classico
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column e_clube_g12
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: d302908c-a4e4-46f8-b801-e21ca6be339f
+		summarizeBy: none
+		sourceColumn: e_clube_g12
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition src_adversario = m
+		mode: import
+		source =
+				let
+				  Origem = MySQL.Database("localhost", "analise_bordero_fluminense"),
+				  #"Navegação 1" = Origem{[Schema = "analise_bordero_fluminense", Item = "adversario"]}[Data]
+				in
+				  #"Navegação 1"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Exception
+

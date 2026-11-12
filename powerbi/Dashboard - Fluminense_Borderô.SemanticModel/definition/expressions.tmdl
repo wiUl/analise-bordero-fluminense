@@ -1,0 +1,71 @@
+expression stg_ingresso =
+		let
+		    Fonte = src_ingresso_partida,
+		    #"Consultas Mescladas" = Table.NestedJoin(Fonte, {"id_setor"}, src_setor, {"id_setor"}, "src_setor", JoinKind.LeftOuter),
+		    #"Consultas Mescladas1" = Table.NestedJoin(#"Consultas Mescladas", {"id_categoria"}, src_categoria_ingresso, {"id_categoria"}, "src_categoria_ingresso", JoinKind.LeftOuter),
+		    #"Consultas Mescladas2" = Table.NestedJoin(#"Consultas Mescladas1", {"id_plano"}, src_plano_socio, {"id_plano"}, "src_plano_socio", JoinKind.LeftOuter),
+		    #"Colunas Removidas" = Table.RemoveColumns(#"Consultas Mescladas2",{"analise_bordero_fluminense.categoria_ingresso", "analise_bordero_fluminense.partida", "analise_bordero_fluminense.plano_socio", "analise_bordero_fluminense.setor"}),
+		    #"src_setor Expandido" = Table.ExpandTableColumn(#"Colunas Removidas", "src_setor", {"nome"}, {"nome"}),
+		    #"Colunas Renomeadas" = Table.RenameColumns(#"src_setor Expandido",{{"nome", "nome_setor"}}),
+		    #"src_categoria_ingresso Expandido" = Table.ExpandTableColumn(#"Colunas Renomeadas", "src_categoria_ingresso", {"nome"}, {"nome"}),
+		    #"Colunas Renomeadas1" = Table.RenameColumns(#"src_categoria_ingresso Expandido",{{"nome", "nome_categoria_ingresso"}}),
+		    #"src_plano_socio Expandido" = Table.ExpandTableColumn(#"Colunas Renomeadas1", "src_plano_socio", {"nome"}, {"nome"}),
+		    #"Colunas Renomeadas2" = Table.RenameColumns(#"src_plano_socio Expandido",{{"nome", "plano_socio"}, {"nome_setor", "setor"}, {"nome_categoria_ingresso", "categoria"}}),
+		    #"Texto Aparado" = Table.TransformColumns(#"Colunas Renomeadas2",{{"descricao_original", Text.Trim, type text}}),
+		    #"Consultas Mescladas3" = Table.NestedJoin(#"Texto Aparado", {"descricao_original"}, map_tipo_ingresso, {"descricao_original"}, "map_tipo_ingresso", JoinKind.LeftOuter),
+		    #"map_tipo_ingresso Expandido" = Table.ExpandTableColumn(#"Consultas Mescladas3", "map_tipo_ingresso", {"tipo_ingresso"}, {"tipo_ingresso"}),
+		    #"Coluna Condicional Adicionada" = Table.AddColumn(#"map_tipo_ingresso Expandido", "tipo de ingresso", each if [tipo_ingresso] <> null then [tipo_ingresso] else [categoria]),
+		    #"Valor Substituído" = Table.ReplaceValue(#"Coluna Condicional Adicionada",null,"Sem Setor",Replacer.ReplaceValue,{"setor"}),
+		    #"Valor Substituído2" = Table.ReplaceValue(#"Valor Substituído","Socio","Sócio",Replacer.ReplaceValue,{"tipo de ingresso"}),
+		    #"Valor Substituído1" = Table.ReplaceValue(#"Valor Substituído2",null,"Sem Plano",Replacer.ReplaceValue,{"plano_socio"}),
+		    #"Colunas Removidas1" = Table.RemoveColumns(#"Valor Substituído1",{"categoria", "tipo_ingresso"}),
+		    #"Valor Substituído3" = Table.ReplaceValue(#"Colunas Removidas1","Socio","Sócio",Replacer.ReplaceText,{"plano_socio"}),
+		    #"Colunas Removidas2" = Table.RemoveColumns(#"Valor Substituído3",{"id_setor", "id_categoria", "id_plano", "id_setor_chave", "id_categoria_chave", "id_plano_chave"}),
+		    #"Coluna Condicional Adicionada1" = Table.AddColumn(#"Colunas Removidas2", "tipo de publico", each if [preco] = null then "Gratuidade" else "Pagante")
+		in
+		    #"Coluna Condicional Adicionada1"
+	lineageTag: 0ad1eef9-a1da-496d-8aea-e2fc51917a78
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+
+expression tmp_descricoes =
+		let
+		    Fonte = stg_ingresso,
+		    #"Linhas Filtradas" = Table.SelectRows(Fonte, each ([categoria] = null)),
+		    #"Índice Adicionado" = Table.AddIndexColumn(#"Linhas Filtradas", "Índice", 0, 1, Int64.Type),
+		    #"Outras Colunas Removidas" = Table.SelectColumns(#"Índice Adicionado",{"descricao_original"}),
+		    #"Duplicatas Removidas" = Table.Distinct(#"Outras Colunas Removidas")
+		in
+		    #"Duplicatas Removidas"
+	lineageTag: 59d811be-0e66-4fab-a4ac-9adf1cecea4d
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+
+expression map_tipo_ingresso =
+		let
+		    Fonte = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("nVRLasMwEL2K8KqFQEmuEJoSSFqDSzchi6mthAFbCiO79D5d9AA9gi9WWf7UUh3H8s56ejNv5lkzh0OwhoQjAXuWlHO2Fbk5vaHCHPQhWAQNFhwXLnvP0aZWgOFtxZm4UpKFJDMZoxSQmlQDcJ03A5I6pc0fhHt1KLaGHD9AGW5dWo0Y1ivheyFAX7ZfFfpEkBeYaLpiF0lsx1Ez/tAOrMghxLLny93qYXXveNJQjBntfWeEbVhU9WA5FpU/NjRU4UlS+Q0sgfFaW62oSNnjJ6tTV9b0Dn3ejivT2okT6jQzQprqNylkXJzltX7s6Ki4+Ap2IZ6CL/87lON6TkT9w6bK7YEgBlF+6S9UvsU2T2SOpU69Nx/YNXf9oge9mhztmjUtut0gqrcSUI2tFneClzcmeOlM8DyHXW9cjs9b8NoXoVbb+O2L4aEeVz3+Ag==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [descricao_original = _t, tipo_ingresso = _t]),
+		    #"Tipo Alterado" = Table.TransformColumnTypes(Fonte,{{"descricao_original", type text}, {"tipo_ingresso", type text}})
+		in
+		    #"Tipo Alterado"
+	lineageTag: a370db2b-e545-48db-aeb5-3c5460284f30
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+
+expression src_ingresso_partida =
+		let
+		  Origem = MySQL.Database("localhost", "analise_bordero_fluminense"),
+		  #"Navegação 1" = Origem{[Schema = "analise_bordero_fluminense", Item = "ingresso_partida"]}[Data]
+		in
+		  #"Navegação 1"
+	lineageTag: 24f2815c-b107-47ed-af8e-419687d0212b
+
+	annotation PBI_NavigationStepName = Navegação
+
+	annotation PBI_ResultType = Table
+

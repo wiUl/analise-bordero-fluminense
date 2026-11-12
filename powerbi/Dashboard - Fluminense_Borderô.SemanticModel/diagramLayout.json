@@ -1,0 +1,282 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 640.65213169635263,
+        "y": 75.514348785871974
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 954.96743905153335,
+            "y": 106.80871373712125
+          },
+          "nodeIndex": "dim_partida",
+          "nodeLineageTag": "f0692806-48d7-4580-b66e-2fc3820e7ebe",
+          "size": {
+            "height": 919,
+            "width": 454
+          },
+          "zIndex": 11
+        },
+        {
+          "location": {
+            "x": 212.91512818049273,
+            "y": 99.016762544340736
+          },
+          "nodeIndex": "src_adversario",
+          "nodeLineageTag": "dbf9a13c-bbbb-4a69-b0ce-96be45757908",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 658.78202954664675
+          },
+          "nodeIndex": "src_atributos_partida",
+          "nodeLineageTag": "26c555f6-fc9d-4530-88fc-f642a6223ddd",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 13
+        },
+        {
+          "location": {
+            "x": 241.89308070043307,
+            "y": 995.01786493400471
+          },
+          "nodeIndex": "src_categoria_ingresso",
+          "nodeLineageTag": "4f990cb9-4090-4107-9f01-407d835de30c",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 0
+          },
+          "nodeIndex": "src_competicao",
+          "nodeLineageTag": "54117b47-e76d-40f1-9fbe-572214dd777d",
+          "size": {
+            "height": 145,
+            "width": 234
+          },
+          "zIndex": 4
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 273.26914950275716
+          },
+          "nodeIndex": "src_competicao_temporada",
+          "nodeLineageTag": "5a94d77f-e4a5-449e-982e-227d7edac248",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 5
+        },
+        {
+          "location": {
+            "x": 241.93546379077452,
+            "y": 561.086423071203
+          },
+          "nodeIndex": "src_contexto_partida",
+          "nodeLineageTag": "217a0db4-9fd8-44e9-befc-1e7ff5eeeab7",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 6
+        },
+        {
+          "location": {
+            "x": 226.9445761756707,
+            "y": 282
+          },
+          "nodeIndex": "src_desempenho_partida",
+          "nodeLineageTag": "0836ba44-a708-4d33-a720-7a66905aefaf",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 7
+        },
+        {
+          "location": {
+            "x": 244.691378836505,
+            "y": 1136.6392800384062
+          },
+          "nodeIndex": "src_despesa_partida",
+          "nodeLineageTag": "8e14f040-7bab-476b-ae74-0d9d8301bf4b",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 8
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 435.12944933442338
+          },
+          "nodeIndex": "src_estadio",
+          "nodeLineageTag": "23d5c00b-19ef-4ee2-b826-72b19cba6179",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 12
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 1138.7178172549454
+          },
+          "nodeIndex": "src_partida",
+          "nodeLineageTag": "b47a0e37-a232-4646-9c79-4390970e8827",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 15
+        },
+        {
+          "location": {
+            "x": 243.88084216598349,
+            "y": 857.1091303531789
+          },
+          "nodeIndex": "src_plano_socio",
+          "nodeLineageTag": "14779e47-9ee1-4080-bbda-abfc3256bc21",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 9
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 826.78534953017618
+          },
+          "nodeIndex": "src_resumo_financeiro_partida",
+          "nodeLineageTag": "7502cb15-b1cd-4c8a-bdfc-dd3e1784ca1f",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 14
+        },
+        {
+          "location": {
+            "x": 242.89716480893549,
+            "y": 725.27095588264854
+          },
+          "nodeIndex": "src_setor",
+          "nodeLineageTag": "821a7764-8d7f-4a92-abd3-e721495d5099",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 16
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 146.94477932228551
+          },
+          "nodeIndex": "src_temporada",
+          "nodeLineageTag": "bd7bc5de-24d2-4da0-8ac3-9b58158b63b8",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 10
+        },
+        {
+          "location": {
+            "x": 1464.8971648089355,
+            "y": 23
+          },
+          "nodeIndex": "dim_ingresso",
+          "nodeLineageTag": "6309dc3e-b219-42e9-b913-d872169b2547",
+          "size": {
+            "height": 241,
+            "width": 234
+          },
+          "zIndex": 17
+        },
+        {
+          "location": {
+            "x": 635.89716480893549,
+            "y": 174
+          },
+          "nodeIndex": "fato_ingresso",
+          "nodeLineageTag": "68da16a5-e74f-4f41-8763-dabe77cad4ab",
+          "size": {
+            "height": 310,
+            "width": 234
+          },
+          "zIndex": 1
+        },
+        {
+          "location": {
+            "x": 1461.8971648089355,
+            "y": 617.35890862747272
+          },
+          "nodeIndex": "fato_despesa",
+          "nodeLineageTag": "03e93b8f-23a3-43ed-9bfb-d79e4521e7e7",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 18
+        },
+        {
+          "location": {
+            "x": 1658.8971648089355,
+            "y": 340.35890862747272
+          },
+          "nodeIndex": "dim_data",
+          "nodeLineageTag": "38def0bd-6a87-475e-a9c3-8a7deae9ed2b",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1942.8971648089355,
+            "y": 641.35890862747272
+          },
+          "nodeIndex": "_Medidas",
+          "nodeLineageTag": "638cd239-a82c-4832-a68b-99c0513372e5",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "Todas as tabelas",
+      "zoomValue": 84.752104770813844,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Todas as tabelas",
+  "defaultDiagram": "Todas as tabelas"
+}

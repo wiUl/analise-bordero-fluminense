@@ -1,0 +1,45 @@
+table fato_despesa
+	lineageTag: 03e93b8f-23a3-43ed-9bfb-d79e4521e7e7
+
+	column id_partida
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 261e6d60-cda0-466b-b32f-e2eed1bd5281
+		summarizeBy: none
+		sourceColumn: id_partida
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_despesa
+		dataType: string
+		lineageTag: 8eb31c5c-7ce3-4534-9ff3-9ca45fedbdb9
+		summarizeBy: none
+		sourceColumn: nome_despesa
+
+		annotation SummarizationSetBy = Automatic
+
+	column valor
+		dataType: double
+		lineageTag: 2b7e4e4b-493a-484d-9cf8-bed36360e6e0
+		summarizeBy: sum
+		sourceColumn: valor
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition fato_despesa = m
+		mode: import
+		source =
+				let
+				  Origem = src_despesa_partida,
+				  #"As outras colunas foram removidas" = Table.SelectColumns(Origem, {"id_partida", "nome", "valor"}),
+				  #"Colunas renomeadas" = Table.RenameColumns(#"As outras colunas foram removidas", {{"nome", "nome_despesa"}})
+				in
+				  #"Colunas renomeadas"
+
+	annotation PBI_ResultType = Table
+

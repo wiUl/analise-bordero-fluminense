@@ -1,0 +1,105 @@
+table dim_data
+	lineageTag: 38def0bd-6a87-475e-a9c3-8a7deae9ed2b
+	dataCategory: Time
+
+	column Date
+		isKey
+		formatString: General Date
+		lineageTag: ec354639-5147-462d-8c05-828b1e411373
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Ano
+		formatString: 0
+		lineageTag: 49efb545-511e-4fbf-bf03-8042c3f90ae5
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Ano]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Mês nº'
+		formatString: 0
+		lineageTag: 61652b2f-a021-4de1-91be-6c84012e4ea9
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Mês nº]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Mês
+		lineageTag: 0ebd50fe-f05c-440b-a93c-17e7f7735de5
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Mês]
+		sortByColumn: 'Mês nº'
+
+		annotation SummarizationSetBy = Automatic
+
+	column Trimestre
+		lineageTag: badb953d-a627-41aa-a5f4-af6e94e5c38a
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Trimestre]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Dia
+		formatString: 0
+		lineageTag: 4f9d236c-4ec9-4a72-a9a3-3032bfb11f60
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Dia]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dia da semana nº'
+		formatString: 0
+		lineageTag: b2d1b0ed-4863-4356-baae-f5350612cd2a
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Dia da semana nº]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dia da semana'
+		lineageTag: 77d8f68e-d6a0-42ff-8165-5b9a124c0bca
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Dia da semana]
+		sortByColumn: 'Dia da semana nº'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Tipo de dia'
+		lineageTag: 64181a1b-f383-4adf-aeb0-701fdf020e26
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Tipo de dia]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_data = calculated
+		mode: import
+		source =
+				
+				VAR Inicio = DATE(YEAR(MIN(dim_partida[data])), 1, 1)
+				VAR Fim    = DATE(YEAR(MAX(dim_partida[data])), 12, 31)
+				RETURN
+				ADDCOLUMNS(
+				    CALENDAR(Inicio, Fim),
+				    "Ano", YEAR([Date]),
+				    "Mês nº", MONTH([Date]),
+				    "Mês", FORMAT([Date], "mmmm", "pt-BR"),
+				    "Trimestre", "T" & QUARTER([Date]),
+				    "Dia", DAY([Date]),
+				    "Dia da semana nº", WEEKDAY([Date], 2),
+				    "Dia da semana", FORMAT([Date], "dddd", "pt-BR"),
+				    "Tipo de dia", IF(WEEKDAY([Date], 2) >= 6, "Fim de semana", "Dia Útil")
+				)
+
+	annotation PBI_Id = 9fee3677cf01476d8abf01c3dc6cd047
+

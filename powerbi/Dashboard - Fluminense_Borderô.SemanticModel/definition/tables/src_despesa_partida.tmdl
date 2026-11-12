@@ -1,0 +1,65 @@
+table src_despesa_partida
+	isHidden
+	lineageTag: 8e14f040-7bab-476b-ae74-0d9d8301bf4b
+
+	column id_despesa
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 017889c3-fa83-4142-adf9-b6aae94b3a0b
+		summarizeBy: sum
+		sourceColumn: id_despesa
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_partida
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f6e751f7-8f51-41b6-b02d-3eccae91a100
+		summarizeBy: sum
+		sourceColumn: id_partida
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome
+		dataType: string
+		isHidden
+		lineageTag: 8c11e427-b3e7-439e-a38b-96eb7c2446a7
+		summarizeBy: none
+		sourceColumn: nome
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column valor
+		dataType: double
+		isHidden
+		lineageTag: eb322ca9-daf1-414a-8f01-315d348ec5f1
+		summarizeBy: sum
+		sourceColumn: valor
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition src_despesa_partida = m
+		mode: import
+		source =
+				let
+				  Origem = MySQL.Database("localhost", "analise_bordero_fluminense"),
+				  #"Navegação 1" = Origem{[Schema = "analise_bordero_fluminense", Item = "despesa_partida"]}[Data]
+				in
+				  #"Navegação 1"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Exception
+
